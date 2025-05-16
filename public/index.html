@@ -3,44 +3,25 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Modern V2 Chat App</title>
+<title>Public Chat V2</title>
 <link rel="stylesheet" href="style.css" />
-<script src="/socket.io/socket.io.js"></script>
 </head>
 <body>
+<div id="app">
+  <header>Public Chat</header>
 
-<!-- Username Modal -->
-<div id="usernameModal" class="modal">
-  <div class="modal-content">
-    <h2>Enter Username</h2>
-    <input id="usernameInput" type="text" placeholder="Username" autofocus />
-    <button id="usernameSubmit">Join Chat</button>
-  </div>
-</div>
+  <form id="user-form">
+    <input type="text" id="username" placeholder="Enter your username" maxlength="20" required />
+    <input type="date" id="birthday" required />
+    <button type="submit">Join Chat</button>
+  </form>
 
-<div class="container hidden">
+  <section id="chat-section" style="display:none;"></section>
 
-  <aside class="sidebar">
-    <button id="btnPublicChat" class="active">Public Chat</button>
-    <button id="btnFriendRequests">Friend Requests <span id="reqCount" class="badge hidden">0</span></button>
-
-    <ul id="friendList" class="friend-list"></ul>
-
-    <div class="add-friend">
-      <input id="addFriendInput" type="text" placeholder="Add friend..." />
-      <button id="btnAddFriend">Add</button>
-    </div>
-  </aside>
-
-  <main class="chat-area">
-    <header id="chatHeader">Public Chat</header>
-    <ul id="chatMessages" class="chat-messages"></ul>
-    <form id="chatForm" class="chat-form">
-      <input id="chatInput" autocomplete="off" placeholder="Type a message..." />
-      <button type="submit">Send</button>
-    </form>
-  </main>
-
+  <form id="message-form" style="display:none;">
+    <input type="text" id="message-input" placeholder="Type your message..." maxlength="250" autocomplete="off" />
+    <button type="submit" id="send-btn" disabled>Send</button>
+  </form>
 </div>
 
 <script src="main.js"></script>
