@@ -8,18 +8,38 @@
   <script src="/socket.io/socket.io.js"></script>
   <script defer src="main.js"></script>
 </head>
-<body style="background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; height: 100vh;">
-
-  <h1>Solvia Chat</h1>
-
-  <div id="friendsList" style="margin-bottom: 15px;"></div>
-
-  <div id="chatArea" style="height: 300px; overflow-y: auto; width: 100%; max-width: 500px; border-radius: 12px; padding: 12px; background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(8px); box-shadow: 0 8px 24px rgba(0,0,0,0.2);"></div>
-
-  <div style="margin-top: 15px; width: 100%; max-width: 500px; display: flex;">
-    <input id="chatInput" placeholder="Type your message..." style="flex: 1; padding: 10px 14px; border-radius: 12px 0 0 12px; border: none; outline: none; font-size: 16px;" />
-    <button id="sendBtn" style="padding: 10px 20px; border: none; border-radius: 0 12px 12px 0; background: linear-gradient(45deg, #6a11cb, #2575fc); color: white; font-weight: 600; cursor: pointer;">Send</button>
+<body>
+  <div class="loginContainer" id="loginContainer">
+    <h2>Welcome to Solvia Chat</h2>
+    <input type="text" id="usernameInput" placeholder="Enter your username" autocomplete="off" />
+    <button id="loginBtn" disabled>Join Chat</button>
   </div>
 
+  <div class="appContainer hidden" id="appContainer">
+    <header>
+      <h1>Solvia Chat</h1>
+      <div id="currentUser"></div>
+    </header>
+
+    <main>
+      <section class="chatSection">
+        <h3>Public Chat</h3>
+        <div id="publicChat" class="chatWindow"></div>
+        <input type="text" id="publicInput" placeholder="Type a public message..." autocomplete="off" />
+        <button id="sendPublicBtn">Send</button>
+      </section>
+
+      <section class="friendsSection">
+        <h3>Friends</h3>
+        <div id="friendsList" class="friendsList"></div>
+        <div id="privateChatSection" class="hidden">
+          <h4>Private Chat with <span id="privateChatWith"></span></h4>
+          <div id="privateChat" class="chatWindow"></div>
+          <input type="text" id="privateInput" placeholder="Type a private message..." autocomplete="off" />
+          <button id="sendPrivateBtn">Send</button>
+        </div>
+      </section>
+    </main>
+  </div>
 </body>
 </html>
