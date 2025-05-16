@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Solvia Chat</title>
+  <script src="/socket.io/socket.io.js"></script>
+  <script defer src="main.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-900 text-white flex flex-col items-center justify-center h-screen">
+  <div class="w-full max-w-lg">
+    <h1 class="text-3xl font-bold mb-4 text-center">Solvia Chat</h1>
+    <div id="chat" class="bg-gray-800 p-4 rounded h-96 overflow-y-scroll mb-4"></div>
+    <input id="message" type="text" placeholder="Type your message..." class="w-full p-2 rounded text-black" />
+  </div>
+</body>
+</html>
