@@ -4,7 +4,6 @@ const joinSection = document.getElementById('join-section');
 const chatSection = document.getElementById('chat-section');
 
 const usernameInput = document.getElementById('username-input');
-const birthdayInput = document.getElementById('birthday-input');
 
 const joinBtn = document.getElementById('join-btn');
 const chatBox = document.getElementById('chat-box');
@@ -14,34 +13,15 @@ const sendBtn = document.getElementById('send-btn');
 
 let currentUser = null;
 
-// Validate birthday - must be at least 13 years old
-function isBirthdayValid(dateString) {
-  if (!dateString) return false;
-  const today = new Date();
-  const birthDate = new Date(dateString);
-  const age = today.getFullYear() - birthDate.getFullYear();
-  const m = today.getMonth() - birthDate.getMonth();
-  if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-    return age - 1 >= 13;
-  }
-  return age >= 13;
-}
-
 joinBtn.addEventListener('click', () => {
   const username = usernameInput.value.trim();
-  const birthday = birthdayInput.value;
 
   if (!username) {
     alert('Please enter a username.');
     return;
   }
 
-  if (!isBirthdayValid(birthday)) {
-    alert('You must be at least 13 years old to join.');
-    return;
-  }
-
-  currentUser = { username, birthday };
+  currentUser = { username };
 
   ws.send(JSON.stringify({
     type: 'join',
