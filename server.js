@@ -1,92 +1,89 @@
 const express = require("express");
+const http = require("http");
+const { Server } = require("socket.io");
+
 const app = express();
-const http = require("http").createServer(app);
-const io = require("socket.io")(http);
+const server = http.createServer(app);
+const io = new Server(server);
 
 app.use(express.static("public"));
 
-// Data structures to track users, friends, groups
-const users = new Map(); // socket.id -> { username, friends: Set, currentRoom }
-const groups = new Map(); // roomName -> Set of usernames
+// Map to track online users: username -> socket.id
+const onlineUsers = new Map();
 
-// Default global chat room
-const GLOBAL_ROOM = "lobby";
+// Map to store each user’s friends: username -> Set of friends
+const friendsMap = new Map();
 
 io.on("connection", (socket) => {
-  console.log("A user connected", socket.id);
+  let currentUser = null;
 
-  // User joins with username
+  // User joins with a username
   socket.on("join", (username) => {
-    users.set(socket.id, { username, friends: new Set(), currentRoom: GLOBAL_ROOM });
-    socket.join(GLOBAL_ROOM);
-    console.log(`${username} joined and entered ${GLOBAL_ROOM}`);
+    currentUser = username;
+    onlineUsers.set(username, socket.id);
 
-    // Send current room info to user
-    socket.emit("joinedRoom", GLOBAL_ROOM);
+    // Initialize friends set if new user
+    if (!friendsMap.has(username)) friendsMap.set(username, new Set());
 
-    // Notify others in the room
-    socket.to(GLOBAL_ROOM).emit("chat message", { username: "System", message: `${username} joined the room.` });
-  });
+    // Send friend statuses to the user
+    const friends = Array.from(friendsMap.get(username));
+    const friendStatuses = friends.map(friendName => ({
+      name: friendName,
+      online: onlineUsers.has(friendName)
+    }));
+    socket.emit("friendsStatus", friendStatuses);
 
-  // Handle chat message
-  socket.on("chat message", (data) => {
-    // data = { message }
-    const user = users.get(socket.id);
-    if (!user) return;
-    const room = user.currentRoom;
-    io.to(room).emit("chat message", { username: user.username, message: data.message });
-  });
-
-  // Handle switching rooms/groups
-  socket.on("joinRoom", (roomName) => {
-    const user = users.get(socket.id);
-    if (!user) return;
-
-    const oldRoom = user.currentRoom;
-    socket.leave(oldRoom);
-    socket.join(roomName);
-
-    user.currentRoom = roomName;
-
-    if (!groups.has(roomName)) {
-      groups.set(roomName, new Set());
-    }
-    groups.get(roomName).add(user.username);
-
-    socket.emit("joinedRoom", roomName);
-    socket.to(oldRoom).emit("chat message", { username: "System", message: `${user.username} left the room.` });
-    socket.to(roomName).emit("chat message", { username: "System", message: `${user.username} joined the room.` });
-  });
-
-  // Handle adding friend
-  socket.on("addFriend", (friendName) => {
-    const user = users.get(socket.id);
-    if (!user) return;
-
-    user.friends.add(friendName);
-    socket.emit("friendAdded", friendName);
-  });
-
-  socket.on("disconnect", () => {
-    const user = users.get(socket.id);
-    if (user) {
-      console.log(`${user.username} disconnected`);
-      const room = user.currentRoom;
-      socket.to(room).emit("chat message", { username: "System", message: `${user.username} left the room.` });
-      users.delete(socket.id);
-
-      // Remove user from any groups they belonged to
-      for (const [roomName, members] of groups.entries()) {
-        members.delete(user.username);
-        if (members.size === 0) {
-          groups.delete(roomName);
-        }
+    // Notify this user’s friends that they are now online
+    friends.forEach(friendName => {
+      const friendSocketId = onlineUsers.get(friendName);
+      if (friendSocketId) {
+        io.to(friendSocketId).emit("friendStatusUpdate", { name: username, online: true });
       }
+    });
+
+    // Optionally join a public "lobby" room for group chat
+    socket.join("lobby");
+    socket.emit("joinedRoom", "lobby");
+  });
+
+  // Handle friend request / add friend
+  socket.on("addFriend", (friendName) => {
+    if (!currentUser) return;
+
+    // Add friend both ways (simple symmetric friendship)
+    friendsMap.get(currentUser).add(friendName);
+    if (!friendsMap.has(friendName)) friendsMap.set(friendName, new Set());
+    friendsMap.get(friendName).add(currentUser);
+
+    // Inform current user that friend was added
+    socket.emit("friendAdded", { name: friendName, online: onlineUsers.has(friendName) });
+
+    // Notify friend (if online) they got a new friend
+    const friendSocketId = onlineUsers.get(friendName);
+    if (friendSocketId) {
+      io.to(friendSocketId).emit("friendAdded", { name: currentUser, online: true });
     }
+  });
+
+  // Handle user disconnecting
+  socket.on("disconnect", () => {
+    if (!currentUser) return;
+
+    // Remove user from online users
+    onlineUsers.delete(currentUser);
+
+    // Notify friends user went offline
+    const friends = Array.from(friendsMap.get(currentUser) || []);
+    friends.forEach(friendName => {
+      const friendSocketId = onlineUsers.get(friendName);
+      if (friendSocketId) {
+        io.to(friendSocketId).emit("friendStatusUpdate", { name: currentUser, online: false });
+      }
+    });
   });
 });
 
 const PORT = process.env.PORT || 3000;
-http.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
