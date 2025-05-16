@@ -1,69 +1,71 @@
-const WebSocket = require('ws');
 const http = require('http');
-const express = require('express');
+const WebSocket = require('ws');
+const fs = require('fs');
+const path = require('path');
 
-const app = express();
-const server = http.createServer(app);
-const wss = new WebSocket.Server({ server });
+const server = http.createServer((req, res) => {
+  let filePath = '.' + req.url;
+  if (filePath === './') filePath = './public/index.html';
 
-app.use(express.static('public')); // public folder with html/css/js
+  const extname = path.extname(filePath);
+  const contentType = extname === '.js' ? 'text/javascript' :
+                      extname === '.css' ? 'text/css' :
+                      'text/html';
 
-// Keep track of connected clients and users
-const clients = new Map();
-
-wss.on('connection', (ws) => {
-  let user = null;
-
-  ws.on('message', (message) => {
-    try {
-      const data = JSON.parse(message);
-
-      if (data.type === 'join' && data.user) {
-        user = data.user;
-        clients.set(ws, user);
-
-        // Broadcast join message
-        broadcast({
-          type: 'system',
-          text: `${user.username} joined the chat.`,
-        });
-        return;
-      }
-
-      if (data.type === 'chat' && user) {
-        broadcast({
-          type: 'chat',
-          user,
-          text: data.text
-        });
-        return;
-      }
-    } catch (err) {
-      console.error('Error parsing message:', err);
-    }
-  });
-
-  ws.on('close', () => {
-    if (user) {
-      clients.delete(ws);
-      broadcast({
-        type: 'system',
-        text: `${user.username} left the chat.`,
-      });
+  fs.readFile(filePath, (error, content) => {
+    if (error) {
+      res.writeHead(404);
+      res.end('Not found');
+    } else {
+      res.writeHead(200, { 'Content-Type': contentType });
+      res.end(content, 'utf-8');
     }
   });
 });
 
-function broadcast(data) {
-  const message = JSON.stringify(data);
-  for (const client of wss.clients) {
-    if (client.readyState === WebSocket.OPEN) {
+const wss = new WebSocket.Server({ server });
+
+const clients = new Set();
+
+wss.on('connection', (ws) => {
+  clients.add(ws);
+  ws.on('message', (message) => {
+    try {
+      const data = JSON.parse(message);
+      if (data.type === 'join') {
+        ws.username = data.username;
+        ws.send(JSON.stringify({ type: 'system', text: `Welcome ${data.username}!` }));
+        broadcast(JSON.stringify({ type: 'system', text: `${data.username} joined the chat.` }), ws);
+      } else if (data.type === 'chat') {
+        const chatMessage = JSON.stringify({
+          type: 'chat',
+          user: { username: ws.username || 'Unknown' },
+          text: data.text,
+        });
+        broadcast(chatMessage);
+      }
+    } catch (e) {
+      console.error('Invalid message', e);
+    }
+  });
+
+  ws.on('close', () => {
+    clients.delete(ws);
+    if (ws.username) {
+      broadcast(JSON.stringify({ type: 'system', text: `${ws.username} left the chat.` }));
+    }
+  });
+});
+
+function broadcast(message, exclude) {
+  clients.forEach(client => {
+    if (client !== exclude && client.readyState === WebSocket.OPEN) {
       client.send(message);
     }
-  }
+  });
 }
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`Server listening on port ${PORT}`);
 });
