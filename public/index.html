@@ -1,29 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Public Chat V2</title>
-<link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Public Chat</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-<div id="app">
-  <header>Public Chat</header>
+  <div class="container">
 
-  <form id="user-form">
-    <input type="text" id="username" placeholder="Enter your username" maxlength="20" required />
-    <input type="date" id="birthday" required />
-    <button type="submit">Join Chat</button>
-  </form>
+    <!-- Join Section -->
+    <section id="join-section" class="card">
+      <h2>Join Chat</h2>
+      <input type="text" id="username-input" placeholder="Enter username" maxlength="20" />
+      <input type="date" id="birthday-input" />
+      <button id="join-btn">Join Chat</button>
+    </section>
 
-  <section id="chat-section" style="display:none;"></section>
+    <!-- Chat Section -->
+    <section id="chat-section" class="card hidden">
+      <div id="chat-box"></div>
+      <div class="input-row">
+        <input type="text" id="chat-input" placeholder="Type a message..." maxlength="200" />
+        <button id="send-btn">Send</button>
+      </div>
+    </section>
 
-  <form id="message-form" style="display:none;">
-    <input type="text" id="message-input" placeholder="Type your message..." maxlength="250" autocomplete="off" />
-    <button type="submit" id="send-btn" disabled>Send</button>
-  </form>
-</div>
+  </div>
 
-<script src="main.js"></script>
+  <script src="main.js"></script>
 </body>
 </html>
