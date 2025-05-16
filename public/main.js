@@ -8,39 +8,17 @@ const chatContainer = document.getElementById("chat-container");
 const chat = document.getElementById("chat");
 const input = document.getElementById("message");
 
-const roomNameDisplay = document.createElement("div");
-roomNameDisplay.className = "mb-2 text-center text-pink-300 font-semibold";
-chatContainer.insertBefore(roomNameDisplay, chat);
+const roomNameDisplay = document.getElementById("room-name");
 
-const friendsList = document.createElement("div");
-friendsList.className = "mb-2 p-2 bg-black bg-opacity-30 rounded max-h-24 overflow-auto";
-friendsList.innerHTML = "<strong>Friends:</strong><br>";
-chatContainer.insertBefore(friendsList, input);
+const friendsList = document.getElementById("friends-list");
+const friendInput = document.getElementById("friend-input");
+const addFriendBtn = document.getElementById("add-friend-btn");
 
-const friendInput = document.createElement("input");
-friendInput.type = "text";
-friendInput.placeholder = "Add friend username";
-friendInput.className = "w-full p-2 rounded mb-2 text-black";
-chatContainer.insertBefore(friendInput, input);
-
-const addFriendBtn = document.createElement("button");
-addFriendBtn.textContent = "Add Friend";
-addFriendBtn.className = "bg-pink-600 px-4 py-2 rounded mb-4 hover:bg-pink-700";
-chatContainer.insertBefore(addFriendBtn, input);
-
-const groupInput = document.createElement("input");
-groupInput.type = "text";
-groupInput.placeholder = "Join/Create group room";
-groupInput.className = "w-full p-2 rounded mb-2 text-black";
-chatContainer.insertBefore(groupInput, input);
-
-const joinGroupBtn = document.createElement("button");
-joinGroupBtn.textContent = "Join Group";
-joinGroupBtn.className = "bg-pink-600 px-4 py-2 rounded mb-4 hover:bg-pink-700";
-chatContainer.insertBefore(joinGroupBtn, input);
+const groupInput = document.getElementById("group-input");
+const joinGroupBtn = document.getElementById("join-group-btn");
 
 let username = null;
-let currentRoom = null;
+let currentRoom = "lobby";
 
 usernameSubmit.addEventListener("click", () => {
   const name = usernameInput.value.trim();
@@ -86,7 +64,7 @@ socket.on("friendAdded", (friendName) => {
 socket.on("joinedRoom", (roomName) => {
   currentRoom = roomName;
   roomNameDisplay.textContent = `Current Room: ${roomName}`;
-  chat.innerHTML = ""; // Clear chat when switching rooms
+  chat.innerHTML = "";
 });
 
 socket.on("chat message", function (data) {
