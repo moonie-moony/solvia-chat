@@ -1,200 +1,141 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
 body {
-  font-family: 'Inter', sans-serif;
-  background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
-  color: #e0e6f3;
   margin: 0;
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(135deg, #667eea, #764ba2);
   height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
+  color: #eee;
 }
-
 #app {
-  display: flex;
-  width: 900px;
-  height: 600px;
-  background: #1e2a38;
+  background: rgba(30, 30, 40, 0.85);
+  backdrop-filter: blur(15px);
   border-radius: 20px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  width: 400px;
+  max-width: 90vw;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
 }
-
-/* Sidebar */
-#sidebar {
-  width: 300px;
-  background: #273746;
-  display: flex;
-  flex-direction: column;
+header {
   padding: 20px;
-  gap: 20px;
-  box-shadow: inset -5px 0 15px rgba(0,0,0,0.3);
-  overflow-y: auto;
-  border-right: 1px solid #3b4a5b;
-}
-
-/* Friend item */
-.friend-item {
-  display: flex;
-  align-items: center;
-  padding: 10px 15px;
-  border-radius: 15px;
-  background: #34495e;
-  cursor: pointer;
-  transition: background 0.3s ease;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-}
-.friend-item:hover {
-  background: #3d566e;
-  box-shadow: 0 4px 12px #6a89cc;
-}
-.friend-avatar {
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #6a89cc, #82ccdd);
-  margin-right: 15px;
-  flex-shrink: 0;
-  box-shadow: 0 0 8px #82ccdd;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-weight: 700;
-  font-size: 1.1rem;
-  color: #fff;
-}
-
-/* Chat container */
-#chat-container {
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-  background: linear-gradient(180deg, #1c2833 0%, #16222a 100%);
-  padding: 20px;
-  gap: 15px;
-}
-
-/* Chat header */
-#chat-header {
+  font-weight: 600;
   font-size: 1.5rem;
-  font-weight: 700;
-  color: #82ccdd;
-  border-bottom: 1px solid #34495e;
-  padding-bottom: 10px;
+  background: linear-gradient(90deg, #764ba2, #667eea);
+  text-align: center;
   user-select: none;
 }
-
-/* Messages */
-#chat-messages {
-  flex-grow: 1;
-  overflow-y: auto;
+#user-form {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding-right: 10px;
-  scrollbar-width: thin;
+  gap: 15px;
+  padding: 20px;
 }
-#chat-messages::-webkit-scrollbar {
-  width: 8px;
-}
-#chat-messages::-webkit-scrollbar-thumb {
-  background: #6a89cc;
-  border-radius: 10px;
-}
-
-/* Message bubbles */
-.message {
-  max-width: 70%;
-  padding: 14px 20px;
-  border-radius: 25px;
+input, button {
+  border-radius: 12px;
+  border: none;
+  padding: 12px 16px;
   font-size: 1rem;
-  line-height: 1.4;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.4);
-  animation: slideIn 0.3s ease forwards;
-  word-break: break-word;
-  user-select: text;
+  font-weight: 500;
+  outline: none;
+  transition: background-color 0.3s ease;
 }
-
-.message.public {
-  background: #34495e;
-  color: #c5d0e6;
-  align-self: flex-start;
+input {
+  background: rgba(255 255 255 / 0.15);
+  color: #eee;
 }
-
-.message.public.self {
-  background: #6a89cc;
-  color: #f1f6f9;
-  align-self: flex-end;
+input::placeholder {
+  color: #ccc;
 }
-
-.message.private {
-  background: #2c3e50;
-  color: #a3b1c2;
-  align-self: flex-start;
-  font-style: italic;
+input:focus {
+  background: rgba(255 255 255 / 0.25);
 }
-
-.message.private.self {
-  background: #82ccdd;
-  color: #15202b;
-  align-self: flex-end;
+button {
+  background: #8e54e9;
+  color: #fff;
+  cursor: pointer;
   font-weight: 600;
 }
-
-/* Sender label */
-.sender {
-  font-weight: 700;
-  font-size: 0.85rem;
-  opacity: 0.75;
-  margin-bottom: 5px;
+button:disabled {
+  background: #5a3e9d;
+  cursor: not-allowed;
 }
-
-/* Chat input */
-#chat-form {
+#chat-section {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 15px 20px;
+  gap: 12px;
+  overflow-y: auto;
+  background: rgba(0, 0, 0, 0.25);
+  backdrop-filter: saturate(180%) blur(8px);
+}
+.message {
+  max-width: 75%;
+  padding: 14px 18px;
+  background: linear-gradient(145deg, #8e54e9, #667eea);
+  border-radius: 18px;
+  box-shadow: 0 3px 10px rgba(142, 84, 233, 0.6);
+  color: white;
+  font-weight: 500;
+  animation: slideIn 0.3s ease forwards;
+  word-wrap: break-word;
+}
+.message .username {
+  font-weight: 700;
+  margin-bottom: 6px;
+  font-size: 0.9rem;
+}
+.message .birthday {
+  font-size: 0.75rem;
+  opacity: 0.75;
+  margin-bottom: 8px;
+}
+#message-form {
   display: flex;
   gap: 12px;
-  margin-top: auto;
+  padding: 15px 20px;
+  background: rgba(0, 0, 0, 0.2);
 }
-
-#chat-input {
+#message-input {
   flex-grow: 1;
-  padding: 14px 18px;
-  border-radius: 30px;
+  border-radius: 16px;
   border: none;
-  background: #3b4a5b;
-  color: #e0e6f3;
-  font-size: 1.1rem;
+  padding: 14px 16px;
+  font-size: 1rem;
   outline: none;
-  transition: background 0.3s ease;
+  background: rgba(255 255 255 / 0.1);
+  color: #eee;
+  transition: background-color 0.3s ease;
 }
-#chat-input:focus {
-  background: #4e5d75;
+#message-input:focus {
+  background: rgba(255 255 255 / 0.2);
 }
-
-#chat-submit {
-  background: #82ccdd;
+#send-btn {
+  background: #764ba2;
   border: none;
-  padding: 14px 28px;
-  border-radius: 30px;
-  font-weight: 700;
+  color: white;
+  padding: 0 22px;
+  border-radius: 16px;
+  font-weight: 600;
   cursor: pointer;
-  color: #15202b;
-  box-shadow: 0 4px 8px #6a89cc;
-  transition: background 0.3s ease;
+  transition: background-color 0.3s ease;
 }
-#chat-submit:hover:not(:disabled) {
-  background: #6a89cc;
-  color: #f1f6f9;
+#send-btn:hover:not(:disabled) {
+  background: #8e54e9;
 }
-#chat-submit:disabled {
-  opacity: 0.5;
+#send-btn:disabled {
+  background: #5a3e9d;
   cursor: not-allowed;
 }
 
-/* Animations */
 @keyframes slideIn {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(12px);
   }
   to {
     opacity: 1;
