@@ -2,44 +2,49 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Solvia Chat</title>
-  <link rel="stylesheet" href="style.css" />
-  <script src="/socket.io/socket.io.js"></script>
-  <script defer src="main.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Solvia</title>
+  <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
-  <div class="loginContainer" id="loginContainer">
-    <h2>Welcome to Solvia Chat</h2>
-    <input type="text" id="usernameInput" placeholder="Enter your username" autocomplete="off" />
-    <button id="loginBtn" disabled>Join Chat</button>
+  <div id="loginContainer" class="centered">
+    <h2>Welcome to Solvia</h2>
+    <input type="text" id="usernameInput" placeholder="Enter your username" />
+    <button id="loginBtn" disabled>Join</button>
   </div>
 
-  <div class="appContainer hidden" id="appContainer">
-    <header>
-      <h1>Solvia Chat</h1>
-      <div id="currentUser"></div>
-    </header>
+  <div id="appContainer" class="hidden app">
+    <div class="sidebar">
+      <h3>Solvia</h3>
+      <p id="currentUser"></p>
+      <div class="section">
+        <h4>Friend Requests</h4>
+        <div id="friendRequests"></div>
+      </div>
+      <div class="section">
+        <h4>Friends</h4>
+        <div id="friendsList"></div>
+      </div>
+    </div>
 
-    <main>
-      <section class="chatSection">
-        <h3>Public Chat</h3>
-        <div id="publicChat" class="chatWindow"></div>
-        <input type="text" id="publicInput" placeholder="Type a public message..." autocomplete="off" />
+    <div class="main">
+      <div class="section">
+        <h4>Public Chat</h4>
+        <div id="publicChat" class="chatBox"></div>
+        <input type="text" id="publicInput" placeholder="Type a message" />
         <button id="sendPublicBtn">Send</button>
-      </section>
+      </div>
 
-      <section class="friendsSection">
-        <h3>Friends</h3>
-        <div id="friendsList" class="friendsList"></div>
-        <div id="privateChatSection" class="hidden">
-          <h4>Private Chat with <span id="privateChatWith"></span></h4>
-          <div id="privateChat" class="chatWindow"></div>
-          <input type="text" id="privateInput" placeholder="Type a private message..." autocomplete="off" />
-          <button id="sendPrivateBtn">Send</button>
-        </div>
-      </section>
-    </main>
+      <div id="privateChatSection" class="section hidden">
+        <h4>Private Chat with <span id="privateChatWith"></span></h4>
+        <div id="privateChat" class="chatBox"></div>
+        <input type="text" id="privateInput" placeholder="Type a message" />
+        <button id="sendPrivateBtn">Send</button>
+      </div>
+    </div>
   </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/main.js"></script>
 </body>
 </html>
