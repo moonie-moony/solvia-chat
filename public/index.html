@@ -2,28 +2,35 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Solvia</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Solvia Chat</title>
+  <link href="styles.css" rel="stylesheet" />
+  <script src="/socket.io/socket.io.js"></script>
 </head>
 <body>
-  <div class="app">
-    <aside class="sidebar">
-      <h1 class="logo">Solvia</h1>
-      <button class="tab" onclick="switchChat('public')">🌐 Public Chat</button>
-      <div class="friends-header">👥 Friends</div>
-      <div id="friendsList"></div>
-      <div class="requests-header">🔔 Requests</div>
-      <div id="requestsList"></div>
+  <div id="app">
+    <aside id="sidebar">
+      <div class="logo">Solvia</div>
+      <button id="btn-public-chat" class="nav-btn active">Public Chat</button>
+      <div class="friends-section">
+        <h3>Friends</h3>
+        <ul id="friend-list"></ul>
+        <input type="text" id="add-friend-input" placeholder="Add friend username" />
+        <button id="btn-add-friend">Add Friend</button>
+      </div>
+      <div class="requests-section">
+        <h3>Requests</h3>
+        <ul id="friend-requests"></ul>
+      </div>
     </aside>
 
-    <main class="chat">
-      <div id="chatHeader" class="chat-header">Public Chat</div>
-      <div id="chatMessages" class="messages"></div>
-      <div class="input-area">
-        <input id="messageInput" type="text" placeholder="Type your message..." />
-        <button onclick="sendMessage()">Send</button>
-      </div>
+    <main id="main-chat">
+      <div id="chat-header">Public Chat</div>
+      <div id="chat-messages" class="chat-messages"></div>
+      <form id="chat-form">
+        <input type="text" id="chat-input" autocomplete="off" placeholder="Type a message..." />
+        <button type="submit">Send</button>
+      </form>
     </main>
   </div>
 
