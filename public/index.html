@@ -1,39 +1,60 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Solvia Chat</title>
-  <link href="styles.css" rel="stylesheet" />
-  <script src="/socket.io/socket.io.js"></script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Modern Smooth Chat</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet" />
+<style>
+  /* CSS will be below */
+</style>
 </head>
 <body>
-  <div id="app">
-    <aside id="sidebar">
-      <div class="logo">Solvia</div>
-      <button id="btn-public-chat" class="nav-btn active">Public Chat</button>
-      <div class="friends-section">
-        <h3>Friends</h3>
-        <ul id="friend-list"></ul>
-        <input type="text" id="add-friend-input" placeholder="Add friend username" />
-        <button id="btn-add-friend">Add Friend</button>
-      </div>
-      <div class="requests-section">
-        <h3>Requests</h3>
-        <ul id="friend-requests"></ul>
-      </div>
-    </aside>
 
-    <main id="main-chat">
-      <div id="chat-header">Public Chat</div>
-      <div id="chat-messages" class="chat-messages"></div>
-      <form id="chat-form">
-        <input type="text" id="chat-input" autocomplete="off" placeholder="Type a message..." />
-        <button type="submit">Send</button>
-      </form>
-    </main>
+<!-- Username modal -->
+<div id="usernameModal" class="modal">
+  <div class="modal-content">
+    <h2>Choose your username</h2>
+    <input id="usernameInput" placeholder="Enter username..." autocomplete="off" />
+    <button id="usernameSubmit">Join Chat</button>
   </div>
+</div>
 
-  <script src="main.js"></script>
+<!-- Main container -->
+<div class="container">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <nav class="nav-buttons">
+      <button id="btnPublicChat" class="active">Public Chat</button>
+      <button id="btnFriendRequests">Friend Requests <span id="reqCount" class="badge"></span></button>
+    </nav>
+
+    <section class="friends-section">
+      <h3>Friends</h3>
+      <ul id="friendList"></ul>
+      <div class="add-friend">
+        <input id="addFriendInput" placeholder="Add friend..." autocomplete="off" />
+        <button id="btnAddFriend">+</button>
+      </div>
+    </section>
+  </aside>
+
+  <!-- Chat area -->
+  <main class="chat-area">
+    <header id="chatHeader">Public Chat</header>
+    <ul id="chatMessages" class="chat-messages"></ul>
+    <form id="chatForm" class="chat-form">
+      <input id="chatInput" placeholder="Type your message..." autocomplete="off" />
+      <button type="submit">Send</button>
+    </form>
+  </main>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  // JS will be below
+</script>
+
 </body>
 </html>
