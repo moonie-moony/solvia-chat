@@ -3,28 +3,25 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Public Chat</title>
+  <title>Modern Public Chat</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="container">
+    <div id="loginScreen" class="overlay active">
+      <h2>Enter your username</h2>
+      <input type="text" id="usernameInput" placeholder="Username" maxlength="20" />
+      <button id="joinBtn">Join Chat</button>
+    </div>
 
-    <!-- Join Section -->
-    <section id="join-section" class="card">
-      <h2>Join Chat</h2>
-      <input type="text" id="username-input" placeholder="Enter username" maxlength="20" />
-      <button id="join-btn">Join Chat</button>
-    </section>
-
-    <!-- Chat Section -->
-    <section id="chat-section" class="card hidden">
-      <div id="chat-box"></div>
-      <div class="input-row">
-        <input type="text" id="chat-input" placeholder="Type a message..." maxlength="200" />
-        <button id="send-btn">Send</button>
-      </div>
-    </section>
-
+    <div id="chatScreen" class="overlay">
+      <header>Public Chat</header>
+      <ul id="messages"></ul>
+      <form id="messageForm">
+        <input type="text" id="messageInput" placeholder="Type your message..." autocomplete="off" maxlength="200" />
+        <button type="submit">Send</button>
+      </form>
+    </div>
   </div>
 
   <script src="main.js"></script>
