@@ -38,8 +38,7 @@ body {
 }
 
 /* Inputs */
-input[type="text"],
-input[type="date"] {
+input[type="text"] {
   width: 100%;
   padding: 12px 15px;
   margin: 10px 0;
@@ -52,13 +51,11 @@ input[type="date"] {
   transition: background 0.3s ease;
 }
 
-input[type="text"]::placeholder,
-input[type="date"]::placeholder {
+input[type="text"]::placeholder {
   color: #ccc;
 }
 
-input[type="text"]:focus,
-input[type="date"]:focus {
+input[type="text"]:focus {
   background: rgba(255 255 255 / 0.3);
 }
 
