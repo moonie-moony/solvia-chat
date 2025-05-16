@@ -16,16 +16,14 @@ const sendBtn = document.getElementById("send-btn");
 
 let currentUser = null;
 
-// Helper to render friend in the friends list
 function renderFriend(friend) {
   const div = document.createElement("div");
   div.textContent = friend.name;
-  div.style.color = friend.online ? "#90ee90" : "#ff6961"; // green or red
+  div.style.color = friend.online ? "#90ee90" : "#ff6961";
   div.id = `friend-${friend.name}`;
   return div;
 }
 
-// Login button handler
 loginBtn.addEventListener("click", () => {
   const username = usernameInput.value.trim();
   if (!username) return alert("Please enter a username");
@@ -37,7 +35,6 @@ loginBtn.addEventListener("click", () => {
   chatSection.style.display = "block";
 });
 
-// Add friend button handler
 addFriendBtn.addEventListener("click", () => {
   const friendName = addFriendInput.value.trim();
   if (!friendName) return alert("Please enter a friend's name");
@@ -47,7 +44,6 @@ addFriendBtn.addEventListener("click", () => {
   addFriendInput.value = "";
 });
 
-// Receive the full friend status list on join
 socket.on("friendsStatus", (friends) => {
   friendsList.innerHTML = "<strong>Friends:</strong><br>";
   friends.forEach(friend => {
@@ -55,12 +51,10 @@ socket.on("friendsStatus", (friends) => {
   });
 });
 
-// New friend added
 socket.on("friendAdded", (friend) => {
   friendsList.appendChild(renderFriend(friend));
 });
 
-// Friend status update (online/offline)
 socket.on("friendStatusUpdate", ({ name, online }) => {
   const friendDiv = document.getElementById(`friend-${name}`);
   if (friendDiv) {
@@ -68,7 +62,6 @@ socket.on("friendStatusUpdate", ({ name, online }) => {
   }
 });
 
-// Send a chat message to the lobby
 sendBtn.addEventListener("click", () => {
   const msg = messageInput.value.trim();
   if (!msg) return;
@@ -77,7 +70,6 @@ sendBtn.addEventListener("click", () => {
   messageInput.value = "";
 });
 
-// Receive messages (including own)
 socket.on("chatMessage", ({ user, message }) => {
   const msgDiv = document.createElement("div");
   msgDiv.innerHTML = `<strong>${user}</strong>: ${message}`;
@@ -85,7 +77,6 @@ socket.on("chatMessage", ({ user, message }) => {
   messagesContainer.scrollTop = messagesContainer.scrollHeight;
 });
 
-// Optionally show joined room
 socket.on("joinedRoom", (room) => {
   const info = document.createElement("div");
   info.style.fontStyle = "italic";
