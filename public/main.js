@@ -1,124 +1,99 @@
-const userForm = document.getElementById('user-form');
-const usernameInput = document.getElementById('username');
-const birthdayInput = document.getElementById('birthday');
+const ws = new WebSocket(`ws://${window.location.host}`);
+
+const joinSection = document.getElementById('join-section');
 const chatSection = document.getElementById('chat-section');
-const messageForm = document.getElementById('message-form');
-const messageInput = document.getElementById('message-input');
+
+const usernameInput = document.getElementById('username-input');
+const birthdayInput = document.getElementById('birthday-input');
+
+const joinBtn = document.getElementById('join-btn');
+const chatBox = document.getElementById('chat-box');
+
+const chatInput = document.getElementById('chat-input');
 const sendBtn = document.getElementById('send-btn');
 
 let currentUser = null;
-let socket = null;
 
-// Check if user is at least 13
-function isOldEnough(birthday) {
-  const birthDate = new Date(birthday);
+// Validate birthday - must be at least 13 years old
+function isBirthdayValid(dateString) {
+  if (!dateString) return false;
   const today = new Date();
-  let age = today.getFullYear() - birthDate.getFullYear();
+  const birthDate = new Date(dateString);
+  const age = today.getFullYear() - birthDate.getFullYear();
   const m = today.getMonth() - birthDate.getMonth();
   if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-    age--;
+    return age - 1 >= 13;
   }
   return age >= 13;
 }
 
-userForm.addEventListener('submit', e => {
-  e.preventDefault();
+joinBtn.addEventListener('click', () => {
   const username = usernameInput.value.trim();
   const birthday = birthdayInput.value;
-  if (!username || !birthday) return;
 
-  if (!isOldEnough(birthday)) {
-    alert('You must be at least 13 years old to join this chat.');
+  if (!username) {
+    alert('Please enter a username.');
+    return;
+  }
+
+  if (!isBirthdayValid(birthday)) {
+    alert('You must be at least 13 years old to join.');
     return;
   }
 
   currentUser = { username, birthday };
 
-  // Connect websocket
-  socket = new WebSocket(`ws://${location.host}`);
+  ws.send(JSON.stringify({
+    type: 'join',
+    user: currentUser
+  }));
 
-  socket.addEventListener('open', () => {
-    // Send join message with user data
-    socket.send(JSON.stringify({ type: 'join', user: currentUser }));
+  joinSection.classList.add('hidden');
+  chatSection.classList.remove('hidden');
 
-    userForm.style.display = 'none';
-    chatSection.style.display = 'flex';
-    messageForm.style.display = 'flex';
-
-    appendSystemMessage(`Welcome, ${username}! You joined the chat.`);
-    messageInput.focus();
-  });
-
-  socket.addEventListener('message', event => {
-    try {
-      const data = JSON.parse(event.data);
-      if (data.type === 'chat') {
-        appendMessage(data.user.username, data.user.birthday, data.text);
-      } else if (data.type === 'system') {
-        appendSystemMessage(data.text);
-      }
-    } catch {
-      console.warn('Invalid message', event.data);
-    }
-  });
-
-  socket.addEventListener('close', () => {
-    appendSystemMessage('Connection closed.');
-    sendBtn.disabled = true;
-  });
-
-  socket.addEventListener('error', () => {
-    appendSystemMessage('Connection error.');
-    sendBtn.disabled = true;
-  });
+  addMessage(`System: Welcome ${username}!`);
 });
 
-messageInput.addEventListener('input', () => {
-  sendBtn.disabled = messageInput.value.trim().length === 0;
+sendBtn.addEventListener('click', sendMessage);
+chatInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') sendMessage();
 });
 
-messageForm.addEventListener('submit', e => {
-  e.preventDefault();
-  const msg = messageInput.value.trim();
-  if (!msg || !socket || socket.readyState !== WebSocket.OPEN) return;
+function sendMessage() {
+  const text = chatInput.value.trim();
+  if (!text) return;
 
-  socket.send(JSON.stringify({ type: 'chat', text: msg }));
+  ws.send(JSON.stringify({
+    type: 'chat',
+    user: currentUser,
+    text
+  }));
 
-  messageInput.value = '';
-  sendBtn.disabled = true;
-  chatSection.scrollTop = chatSection.scrollHeight;
-});
-
-function appendMessage(username, birthday, text) {
-  const msgEl = document.createElement('div');
-  msgEl.classList.add('message');
-
-  const userEl = document.createElement('div');
-  userEl.classList.add('username');
-  userEl.textContent = username;
-
-  const birthdayEl = document.createElement('div');
-  birthdayEl.classList.add('birthday');
-  birthdayEl.textContent = `Birthday: ${birthday}`;
-
-  const textEl = document.createElement('div');
-  textEl.textContent = text;
-
-  msgEl.appendChild(userEl);
-  msgEl.appendChild(birthdayEl);
-  msgEl.appendChild(textEl);
-
-  chatSection.appendChild(msgEl);
-  chatSection.scrollTop = chatSection.scrollHeight;
+  chatInput.value = '';
 }
 
-function appendSystemMessage(text) {
-  const sysMsg = document.createElement('div');
-  sysMsg.classList.add('message');
-  sysMsg.style.background = 'rgba(255,255,255,0.15)';
-  sysMsg.style.fontStyle = 'italic';
-  sysMsg.style.color = '#ccc';
-  sysMsg.textContent = text;
-  chatSection.appendChild(sysMsg);
-  chatSection.scrollTop = chatSection.scrollHeight;
+ws.onmessage = (event) => {
+  const data = JSON.parse(event.data);
+
+  if (data.type === 'system') {
+    addMessage(`System: ${data.text}`);
+  } else if (data.type === 'chat') {
+    addMessage(`${data.user.username}: ${data.text}`);
+  }
+};
+
+ws.onopen = () => {
+  console.log('Connected to chat server');
+};
+
+ws.onerror = (err) => {
+  console.error('WebSocket error:', err);
+};
+
+function addMessage(message) {
+  const msg = document.createElement('div');
+  msg.textContent = message;
+  msg.style.animation = 'fadeIn 0.4s ease forwards';
+  chatBox.appendChild(msg);
+  chatBox.scrollTop = chatBox.scrollHeight;
 }
