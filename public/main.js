@@ -1,85 +1,61 @@
 const socket = io();
 
-const loginSection = document.getElementById("login-section");
-const chatSection = document.getElementById("chat-section");
+// Simulated user & friends — replace with real login system later
+const myUsername = prompt("Enter your username") || "User" + Math.floor(Math.random() * 1000);
+const myFriends = ["friend1", "friend2"]; // usernames of your friends
+let currentRoom = null;
 
-const usernameInput = document.getElementById("username-input");
-const loginBtn = document.getElementById("login-btn");
+const friendsListEl = document.getElementById("friendsList");
+const chatArea = document.getElementById("chatArea");
+const inputEl = document.getElementById("chatInput");
+const sendBtn = document.getElementById("sendBtn");
 
-const friendsList = document.getElementById("friends-list");
-const addFriendInput = document.getElementById("add-friend-input");
-const addFriendBtn = document.getElementById("add-friend-btn");
+// Register user & friends on server
+socket.emit("register", { username: myUsername, friends: myFriends });
 
-const messagesContainer = document.getElementById("messages");
-const messageInput = document.getElementById("message-input");
-const sendBtn = document.getElementById("send-btn");
-
-let currentUser = null;
-
-function renderFriend(friend) {
-  const div = document.createElement("div");
-  div.textContent = friend.name;
-  div.style.color = friend.online ? "#90ee90" : "#ff6961";
-  div.id = `friend-${friend.name}`;
-  return div;
+// Create friend list UI
+function updateFriendsList() {
+  friendsListEl.innerHTML = "";
+  myFriends.forEach((friend) => {
+    const btn = document.createElement("button");
+    btn.textContent = friend;
+    btn.classList.add("friendBtn");
+    btn.onclick = () => joinRoom(friend);
+    friendsListEl.appendChild(btn);
+  });
 }
 
-loginBtn.addEventListener("click", () => {
-  const username = usernameInput.value.trim();
-  if (!username) return alert("Please enter a username");
+// Join chat room with a friend
+function joinRoom(friend) {
+  if (currentRoom) socket.emit("leaveRoom", currentRoom);
+  currentRoom = [myUsername, friend].sort().join("_"); // unique room name
+  chatArea.innerHTML = "";
+  socket.emit("joinRoom", currentRoom);
+}
 
-  currentUser = username;
-  socket.emit("join", username);
+// Receive private messages and show animated bubble chat
+socket.on("privateMessage", ({ message, from }) => {
+  const bubble = document.createElement("div");
+  bubble.classList.add("chatBubble");
+  if (from === myUsername) bubble.classList.add("myBubble");
+  else bubble.classList.add("friendBubble");
+  bubble.textContent = `${from}: ${message}`;
+  chatArea.appendChild(bubble);
 
-  loginSection.style.display = "none";
-  chatSection.style.display = "block";
+  // Animate bubble fade in
+  bubble.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 500, fill: "forwards" });
+
+  // Auto-scroll to bottom
+  chatArea.scrollTop = chatArea.scrollHeight;
 });
 
-addFriendBtn.addEventListener("click", () => {
-  const friendName = addFriendInput.value.trim();
-  if (!friendName) return alert("Please enter a friend's name");
-  if (friendName === currentUser) return alert("You can't add yourself");
+// Send message handler
+sendBtn.onclick = () => {
+  const msg = inputEl.value.trim();
+  if (!msg || !currentRoom) return;
+  socket.emit("privateMessage", { room: currentRoom, message: msg, from: myUsername });
+  inputEl.value = "";
+};
 
-  socket.emit("addFriend", friendName);
-  addFriendInput.value = "";
-});
-
-socket.on("friendsStatus", (friends) => {
-  friendsList.innerHTML = "<strong>Friends:</strong><br>";
-  friends.forEach(friend => {
-    friendsList.appendChild(renderFriend(friend));
-  });
-});
-
-socket.on("friendAdded", (friend) => {
-  friendsList.appendChild(renderFriend(friend));
-});
-
-socket.on("friendStatusUpdate", ({ name, online }) => {
-  const friendDiv = document.getElementById(`friend-${name}`);
-  if (friendDiv) {
-    friendDiv.style.color = online ? "#90ee90" : "#ff6961";
-  }
-});
-
-sendBtn.addEventListener("click", () => {
-  const msg = messageInput.value.trim();
-  if (!msg) return;
-
-  socket.emit("chatMessage", msg);
-  messageInput.value = "";
-});
-
-socket.on("chatMessage", ({ user, message }) => {
-  const msgDiv = document.createElement("div");
-  msgDiv.innerHTML = `<strong>${user}</strong>: ${message}`;
-  messagesContainer.appendChild(msgDiv);
-  messagesContainer.scrollTop = messagesContainer.scrollHeight;
-});
-
-socket.on("joinedRoom", (room) => {
-  const info = document.createElement("div");
-  info.style.fontStyle = "italic";
-  info.textContent = `You joined ${room}`;
-  messagesContainer.appendChild(info);
-});
+// Init
+updateFriendsList();
