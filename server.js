@@ -4,63 +4,69 @@ const http = require("http").createServer(app);
 const { Server } = require("socket.io");
 const io = new Server(http);
 
-const users = new Map();
-const friendships = new Map();
+const users = new Map(); // username => socket.id
+const friendships = new Map(); // username => Set of friend names
 
 app.use(express.static("public"));
 
 io.on("connection", (socket) => {
-  let username = null;
+  let currentUser = null;
 
-  socket.on("login", (name) => {
-    username = name;
-    users.set(username, socket);
-    if (!friendships.has(username)) friendships.set(username, []);
-    for (let [otherName, otherSocket] of users.entries()) {
-      if (otherName !== username) {
-        otherSocket.emit("friendRequest", username);
-      }
-    }
+  socket.on("login", (username) => {
+    currentUser = username;
+    users.set(username, socket.id);
+    if (!friendships.has(username)) friendships.set(username, new Set());
+    // Broadcast updated user list if needed.
+    io.emit("userList", Array.from(users.keys()));
   });
 
   socket.on("publicMessage", (msg) => {
-    io.emit("publicMessage", { sender: username, message: msg });
+    if (!currentUser) return;
+    const timestamp = new Date().toISOString();
+    io.emit("publicMessage", { from: currentUser, message: msg, timestamp });
   });
 
   socket.on("privateMessage", ({ to, message }) => {
-    const recipient = users.get(to);
-    if (recipient) {
-      recipient.emit("privateMessage", { from: username, message });
+    if (!currentUser) return;
+    const timestamp = new Date().toISOString();
+    const recipientSocketId = users.get(to);
+    if (recipientSocketId) {
+      io.to(recipientSocketId).emit("privateMessage", { from: currentUser, message, timestamp });
+      // Echo back to sender.
+      socket.emit("privateMessage", { from: currentUser, message, timestamp });
     }
   });
 
-  socket.on("acceptFriend", (from) => {
-    const fList = friendships.get(username);
-    if (!fList.includes(from)) {
-      fList.push(from);
+  socket.on("sendFriendRequest", (to) => {
+    if (!currentUser) return;
+    const recipientSocketId = users.get(to);
+    if (recipientSocketId) {
+      io.to(recipientSocketId).emit("friendRequest", currentUser);
     }
+  });
 
-    const fromList = friendships.get(from) || [];
-    if (!fromList.includes(username)) {
-      fromList.push(username);
+  socket.on("acceptFriendRequest", (from) => {
+    if (!currentUser) return;
+    // Add the friendship symmetrically.
+    if (!friendships.has(currentUser)) friendships.set(currentUser, new Set());
+    if (!friendships.has(from)) friendships.set(from, new Set());
+    friendships.get(currentUser).add(from);
+    friendships.get(from).add(currentUser);
+    // Notify both users of updated friend list.
+    socket.emit("friendListUpdate", Array.from(friendships.get(currentUser)));
+    const fromSocketId = users.get(from);
+    if (fromSocketId) {
+      io.to(fromSocketId).emit("friendListUpdate", Array.from(friendships.get(from)));
     }
-    friendships.set(from, fromList);
-
-    const otherSocket = users.get(from);
-    if (otherSocket) {
-      otherSocket.emit("friendListUpdate", fromList);
-    }
-
-    socket.emit("friendListUpdate", fList);
   });
 
   socket.on("disconnect", () => {
-    if (username) {
-      users.delete(username);
+    if (currentUser) {
+      users.delete(currentUser);
+      io.emit("userList", Array.from(users.keys()));
     }
   });
 });
 
-http.listen(process.env.PORT || 3000, () => {
-  console.log("Server is running...");
-});
+const PORT = process.env.PORT || 3000;
+http.listen(PORT, () => console.log(`Solvia chat server running on port ${PORT}`));
