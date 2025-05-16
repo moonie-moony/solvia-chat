@@ -3,46 +3,35 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Chat with Friends</title>
+  <title>Modern Chat UI</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-
-  <div class="username-modal" id="usernameModal">
-    <div class="modal-content">
-      <h2>Enter your username</h2>
-      <input id="usernameInput" type="text" placeholder="Username" />
-      <button id="usernameSubmit">Join Chat</button>
-    </div>
+  <div id="usernameModal" class="modal">
+    <input id="usernameInput" type="text" placeholder="Enter username" autofocus />
+    <button id="usernameSubmit">Join Chat</button>
   </div>
 
   <div class="container" style="display:none;">
-    <aside class="sidebar">
-      <div class="sidebar-header">
-        <button id="btnPublicChat" class="active">Public Chat</button>
-        <button id="btnFriendRequests">Friend Requests <span id="reqCount" class="req-count" style="display:none;">0</span></button>
-      </div>
-
-      <ul id="friendList" class="friend-list"></ul>
-
-      <div class="add-friend">
-        <input id="addFriendInput" placeholder="Add friend by username" />
-        <button id="btnAddFriend">Add</button>
-      </div>
+    <aside>
+      <button id="btnPublicChat" class="active">Public Chat</button>
+      <button id="btnFriendRequests">Friend Requests <span id="reqCount" class="badge"></span></button>
+      <ul id="friendList"></ul>
+      <input id="addFriendInput" type="text" placeholder="Add friend" />
+      <button id="btnAddFriend">Add Friend</button>
     </aside>
 
-    <section class="chat-area">
-      <div class="chat-header" id="chatHeader">Public Chat</div>
-      <ul class="chat-messages" id="chatMessages"></ul>
-      <form id="chatForm" style="display:flex;">
-        <input id="chatInput" autocomplete="off" placeholder="Write a message..." />
+    <main>
+      <header id="chatHeader">Public Chat</header>
+      <ul id="chatMessages"></ul>
+      <form id="chatForm">
+        <input id="chatInput" type="text" autocomplete="off" placeholder="Type your message..." />
         <button type="submit">Send</button>
       </form>
-    </section>
+    </main>
   </div>
 
   <script src="/socket.io/socket.io.js"></script>
   <script src="main.js"></script>
-
 </body>
 </html>
