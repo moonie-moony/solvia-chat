@@ -1,50 +1,44 @@
+<!-- public/index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Solvia</title>
-  <link rel="stylesheet" href="/styles.css" />
+  <title>Solvia Chat</title>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div id="loginContainer" class="centered">
-    <h2>Welcome to Solvia</h2>
-    <input type="text" id="usernameInput" placeholder="Enter your username" />
-    <button id="loginBtn" disabled>Join</button>
+  <div id="loginScreen">
+    <h2>Enter your Solvia username</h2>
+    <input type="text" id="usernameInput" placeholder="Username" />
+    <button id="loginBtn" disabled>Enter</button>
   </div>
 
-  <div id="appContainer" class="hidden app">
-    <div class="sidebar">
+  <div id="chatApp" class="hidden">
+    <aside id="sidebar">
       <h3>Solvia</h3>
-      <p id="currentUser"></p>
-      <div class="section">
-        <h4>Friend Requests</h4>
-        <div id="friendRequests"></div>
-      </div>
-      <div class="section">
+      <button id="everyoneBtn">🌐 Everyone</button>
+      <div id="friendListContainer">
         <h4>Friends</h4>
         <div id="friendsList"></div>
       </div>
-    </div>
-
-    <div class="main">
-      <div class="section">
-        <h4>Public Chat</h4>
-        <div id="publicChat" class="chatBox"></div>
-        <input type="text" id="publicInput" placeholder="Type a message" />
-        <button id="sendPublicBtn">Send</button>
+      <div id="requestListContainer">
+        <h4>Friend Requests</h4>
+        <div id="friendRequests"></div>
       </div>
+    </aside>
 
-      <div id="privateChatSection" class="section hidden">
-        <h4>Private Chat with <span id="privateChatWith"></span></h4>
-        <div id="privateChat" class="chatBox"></div>
-        <input type="text" id="privateInput" placeholder="Type a message" />
-        <button id="sendPrivateBtn">Send</button>
+    <main id="chatContainer">
+      <div id="chatHeader"></div>
+      <div id="chatMessages"></div>
+      <div id="chatInput">
+        <input type="text" id="messageInput" placeholder="Type a message..." />
+        <button id="sendBtn">Send</button>
       </div>
-    </div>
+    </main>
   </div>
 
   <script src="/socket.io/socket.io.js"></script>
-  <script src="/main.js"></script>
+  <script src="main.js"></script>
 </body>
 </html>
