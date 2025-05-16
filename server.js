@@ -8,72 +8,37 @@ const io = new Server(server);
 
 app.use(express.static("public"));
 
-const users = {};
-const friends = {};
+const PORT = process.env.PORT || 3000;
+
+// This will store users and their friend rooms (simplified for demo)
+const users = new Map();
 
 io.on("connection", (socket) => {
-  let currentUser = null;
+  console.log("User connected: " + socket.id);
 
-  socket.on("join", (username) => {
-    currentUser = username;
-    users[currentUser] = socket.id;
-
-    if (!friends[currentUser]) friends[currentUser] = [];
-
-    // Send current friends status to user
-    const friendsStatus = friends[currentUser].map((friendName) => ({
-      name: friendName,
-      online: users[friendName] !== undefined,
-    }));
-
-    socket.emit("friendsStatus", friendsStatus);
-    socket.join("lobby");
-    socket.emit("joinedRoom", "lobby");
-
-    // Notify friends that user is online
-    friends[currentUser].forEach((friendName) => {
-      const friendSocketId = users[friendName];
-      if (friendSocketId) {
-        io.to(friendSocketId).emit("friendStatusUpdate", {
-          name: currentUser,
-          online: true,
-        });
-      }
-    });
+  // Save username & friends from client
+  socket.on("register", ({ username, friends }) => {
+    users.set(socket.id, { username, friends });
+    console.log(`User registered: ${username}, friends: ${friends}`);
   });
 
-  socket.on("addFriend", (friendName) => {
-    if (!friends[currentUser].includes(friendName)) {
-      friends[currentUser].push(friendName);
-      socket.emit("friendAdded", { name: friendName, online: users[friendName] !== undefined });
-    }
+  // Join private room with friendID
+  socket.on("joinRoom", (room) => {
+    socket.join(room);
+    console.log(`${socket.id} joined room ${room}`);
   });
 
-  socket.on("chatMessage", (msg) => {
-    io.to("lobby").emit("chatMessage", { user: currentUser, message: msg });
+  // Handle private messages only to room members
+  socket.on("privateMessage", ({ room, message, from }) => {
+    io.to(room).emit("privateMessage", { message, from });
   });
 
   socket.on("disconnect", () => {
-    if (currentUser) {
-      delete users[currentUser];
-
-      // Notify friends that user is offline
-      if (friends[currentUser]) {
-        friends[currentUser].forEach((friendName) => {
-          const friendSocketId = users[friendName];
-          if (friendSocketId) {
-            io.to(friendSocketId).emit("friendStatusUpdate", {
-              name: currentUser,
-              online: false,
-            });
-          }
-        });
-      }
-    }
+    users.delete(socket.id);
+    console.log("User disconnected: " + socket.id);
   });
 });
 
-const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`Solvia chat server running on port ${PORT}`);
 });
