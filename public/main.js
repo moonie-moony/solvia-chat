@@ -1,75 +1,74 @@
-const joinForm = document.getElementById('join-form');
-const usernameInput = document.getElementById('username-input');
-const joinBtn = document.getElementById('join-btn');
-const chatContainer = document.getElementById('chat-container');
-const chatBox = document.getElementById('chat-box');
-const messageInput = document.getElementById('message-input');
-const sendBtn = document.getElementById('send-btn');
+(() => {
+  const loginScreen = document.getElementById('loginScreen');
+  const chatScreen = document.getElementById('chatScreen');
+  const usernameInput = document.getElementById('usernameInput');
+  const joinBtn = document.getElementById('joinBtn');
+  const messages = document.getElementById('messages');
+  const messageForm = document.getElementById('messageForm');
+  const messageInput = document.getElementById('messageInput');
 
-let currentUser = null;
-let socket = null;
+  let ws;
+  let username = null;
 
-function addMessage(message, options = {}) {
-  const msg = document.createElement('div');
-  msg.classList.add('message');
-  if (options.system) msg.classList.add('system');
-  if (options.self) msg.classList.add('self');
-  msg.textContent = message;
-  chatBox.appendChild(msg);
-  chatBox.scrollTop = chatBox.scrollHeight;
-}
+  function addMessage(text, user = null, system = false) {
+    const li = document.createElement('li');
+    li.classList.add('message');
+    if (system) {
+      li.classList.add('system');
+      li.textContent = text;
+    } else {
+      const userSpan = document.createElement('span');
+      userSpan.className = 'username';
+      userSpan.textContent = user || 'Unknown';
+      li.appendChild(userSpan);
 
-function connectSocket(username) {
-  socket = new WebSocket('ws://' + window.location.host);
-
-  socket.addEventListener('open', () => {
-    socket.send(JSON.stringify({ type: 'join', username }));
-  });
-
-  socket.addEventListener('message', (event) => {
-    const data = JSON.parse(event.data);
-    if (data.type === 'system') {
-      addMessage(data.text, { system: true });
+      const textNode = document.createTextNode(text);
+      li.appendChild(textNode);
     }
-    if (data.type === 'chat') {
-      const isSelf = data.user.username === currentUser.username;
-      addMessage(`${data.user.username}: ${data.text}`, { self: isSelf });
-    }
-  });
-
-  socket.addEventListener('close', () => {
-    addMessage('Disconnected from server.', { system: true });
-  });
-
-  socket.addEventListener('error', () => {
-    addMessage('Connection error.', { system: true });
-  });
-}
-
-joinForm.addEventListener('submit', (e) => {
-  e.preventDefault();
-  const username = usernameInput.value.trim();
-  if (!username) return alert('Please enter a username');
-  currentUser = { username };
-  joinForm.style.display = 'none';
-  chatContainer.style.display = 'flex';
-  connectSocket(username);
-  addMessage(`Welcome ${username}!`, { system: true });
-});
-
-sendBtn.addEventListener('click', () => {
-  sendMessage();
-});
-
-messageInput.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') {
-    sendMessage();
+    messages.appendChild(li);
+    messages.scrollTop = messages.scrollHeight;
   }
-});
 
-function sendMessage() {
-  const text = messageInput.value.trim();
-  if (!text || !socket || socket.readyState !== WebSocket.OPEN) return;
-  socket.send(JSON.stringify({ type: 'chat', text }));
-  messageInput.value = '';
-}
+  function connectWebSocket() {
+    ws = new WebSocket(`${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}`);
+
+    ws.addEventListener('open', () => {
+      ws.send(JSON.stringify({ type: 'join', username }));
+    });
+
+    ws.addEventListener('message', (event) => {
+      let data;
+      try {
+        data = JSON.parse(event.data);
+      } catch {
+        return;
+      }
+      if (data.type === 'system') {
+        addMessage(data.text, null, true);
+      }
+      if (data.type === 'chat') {
+        addMessage(data.text, data.user.username);
+      }
+    });
+
+    ws.addEventListener('close', () => {
+      addMessage('Disconnected from server.', null, true);
+    });
+  }
+
+  joinBtn.addEventListener('click', () => {
+    const name = usernameInput.value.trim();
+    if (!name) return alert('Please enter a username');
+    username = name;
+    loginScreen.classList.remove('active');
+    chatScreen.classList.add('active');
+    connectWebSocket();
+  });
+
+  messageForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (!messageInput.value.trim()) return;
+    ws.send(JSON.stringify({ type: 'chat', text: messageInput.value.trim() }));
+    messageInput.value = '';
+  });
+})();
