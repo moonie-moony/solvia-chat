@@ -1,21 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Luntr Chat</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    margin: 0; padding: 0;
+  }
+  #login-section, #chat-section {
+    max-width: 600px;
+    margin: 50px auto;
+    background: rgba(0,0,0,0.5);
+    padding: 20px;
+    border-radius: 10px;
+  }
+  #chat-section { display: none; }
+  #friends-list div {
+    padding: 5px;
+    cursor: default;
+  }
+  #messages {
+    height: 300px;
+    overflow-y: auto;
+    background: rgba(255,255,255,0.1);
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+  }
+  input, button {
+    padding: 8px;
+    margin: 5px 0;
+    border-radius: 5px;
+    border: none;
+  }
+  input { width: calc(100% - 16px); }
+  button {
+    background: #764ba2;
+    color: white;
+    cursor: pointer;
+  }
+  button:hover { background: #5a3680; }
+</style>
+</head>
 <body>
-  <div id="username-modal" class="modal">
-    <input id="username-input" placeholder="Enter username" />
-    <button id="username-submit">Join Chat</button>
-  </div>
 
-  <div id="chat-container" class="hidden">
-    <div id="room-name">Current Room: lobby</div>
-    <div id="friends-list"><strong>Friends:</strong></div>
+<div id="login-section">
+  <h2>Welcome to Luntr Chat</h2>
+  <input type="text" id="username-input" placeholder="Enter username" />
+  <button id="login-btn">Join Chat</button>
+</div>
 
-    <input id="friend-input" type="text" placeholder="Add friend username" />
-    <button id="add-friend-btn">Add Friend</button>
+<div id="chat-section">
+  <h3>Friends</h3>
+  <div id="friends-list"><strong>Friends:</strong><br></div>
+  <input type="text" id="add-friend-input" placeholder="Add friend by name" />
+  <button id="add-friend-btn">Add Friend</button>
 
-    <input id="group-input" type="text" placeholder="Join/Create group room" />
-    <button id="join-group-btn">Join Group</button>
+  <h3>Lobby Chat</h3>
+  <div id="messages"></div>
+  <input type="text" id="message-input" placeholder="Type a message..." />
+  <button id="send-btn">Send</button>
+</div>
 
-    <div id="chat"></div>
-
-    <input id="message" placeholder="Type message and press Enter" disabled />
-  </div>
+<script src="/socket.io/socket.io.js"></script>
+<script src="main.js"></script>
 </body>
+</html>
