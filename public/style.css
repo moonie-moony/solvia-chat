@@ -1,157 +1,155 @@
+/* Reset and basic styles */
 * {
   box-sizing: border-box;
-  font-family: 'Segoe UI', sans-serif;
-}
-
-body {
   margin: 0;
-  background: linear-gradient(to bottom right, #f0f4ff, #e6eeff);
+  padding: 0;
+}
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: #f5f7fa;
   display: flex;
   height: 100vh;
   overflow: hidden;
 }
 
+/* Centered login screen */
 .centered {
   margin: auto;
   text-align: center;
-}
-
-#loginContainer {
   padding: 2rem;
   background: white;
   border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
-#usernameInput {
+/* Login screen styles */
+#loginScreen input {
   padding: 0.5rem;
   width: 70%;
   margin-top: 10px;
 }
-
-#loginBtn {
+#loginScreen button {
   padding: 0.5rem 1rem;
   margin-top: 10px;
   cursor: pointer;
 }
 
-.app {
+/* Chat App Layout */
+.hidden { display: none; }
+#chatApp {
   width: 100%;
+  height: 100vh;
   display: flex;
 }
 
-.sidebar {
+/* Sidebar (Left Navigation) */
+#sidebar {
   width: 250px;
-  background: #ffffffcc;
+  background: #ffffff;
   border-right: 1px solid #ccc;
   padding: 1rem;
-  overflow-y: auto;
-}
-
-.sidebar h3 {
-  margin: 0;
-  margin-bottom: 10px;
-  color: #3b3b3b;
-}
-
-.section {
-  margin-top: 20px;
-}
-
-#friendsList,
-#friendRequests {
   display: flex;
   flex-direction: column;
-  gap: 6px;
 }
-
-.friend-btn {
-  padding: 6px;
-  background: #f0f0f0;
+#sidebar h3 {
+  margin-bottom: 1rem;
+  color: #333;
+  font-size: 1.4rem;
+}
+#sidebar button {
+  width: 100%;
+  padding: 0.5rem;
+  margin-bottom: 0.5rem;
   border: none;
+  background: #e1e9f0;
   border-radius: 6px;
   cursor: pointer;
-  text-align: left;
   transition: background 0.2s ease;
 }
-
-.friend-btn:hover {
-  background: #dbe5ff;
+#sidebar button:hover {
+  background: #cddbea;
+}
+.section {
+  margin-bottom: 1rem;
+}
+#friendListContainer h4,
+#requestListContainer h4 {
+  margin: 0.5rem 0;
+  font-size: 1rem;
+  color: #666;
 }
 
-.main {
+/* Main Chat Area (Center) */
+#chatContainer {
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 1rem;
-  overflow: hidden;
 }
-
-.chatBox {
+#chatHeader {
+  padding: 1rem;
   background: #fff;
-  border-radius: 10px;
+  border-bottom: 1px solid #ccc;
+  font-size: 1.2rem;
+  color: #333;
+}
+#chatMessages {
+  flex: 1;
   padding: 1rem;
-  height: 300px;
+  background: #fdfdfd;
   overflow-y: auto;
-  margin-bottom: 10px;
-  box-shadow: inset 0 0 4px rgba(0,0,0,0.1);
 }
-
 .message {
-  margin: 4px 0;
-  padding: 6px 12px;
-  border-radius: 18px;
-  display: inline-block;
-  max-width: 70%;
-  animation: popin 0.25s ease-out;
+  margin-bottom: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 12px;
+  max-width: 60%;
+  animation: popin 0.3s ease;
+  position: relative;
 }
-
 .message.self {
-  background-color: #a4c8ff;
-  color: #000;
+  background: #d1eaff;
   align-self: flex-end;
   margin-left: auto;
 }
-
 .message.other {
-  background-color: #d1eaff;
-  color: #333;
+  background: #f0f0f0;
   align-self: flex-start;
 }
-
-input[type="text"] {
-  padding: 0.6rem;
-  width: calc(100% - 80px);
-  margin-top: 10px;
+.timestamp {
+  font-size: 0.7rem;
+  color: #888;
+  position: absolute;
+  bottom: -1.2rem;
+  right: 0.5rem;
+}
+#chatInput {
+  padding: 1rem;
+  display: flex;
+  border-top: 1px solid #ccc;
+  background: #fff;
+}
+#chatInput input[type="text"] {
+  flex: 1;
+  padding: 0.75rem;
   border: 1px solid #ccc;
   border-radius: 6px;
+  font-size: 1rem;
+  margin-right: 0.5rem;
 }
-
-button {
-  padding: 0.6rem;
-  margin-top: 10px;
+#chatInput button {
+  padding: 0.75rem 1rem;
   border: none;
   background: #4688f0;
   color: white;
   border-radius: 6px;
   cursor: pointer;
+  font-size: 1rem;
+  transition: background 0.2s ease;
 }
-
-button:hover {
-  background: #3272da;
+#chatInput button:hover {
+  background: #357ae8;
 }
-
-.hidden {
-  display: none;
-}
-
 @keyframes popin {
-  from {
-    transform: scale(0.95);
-    opacity: 0;
-  }
-  to {
-    transform: scale(1);
-    opacity: 1;
-  }
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
 }
