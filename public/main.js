@@ -1,159 +1,125 @@
 const socket = io();
+let username = "";
+let friends = [];
+let friendRequests = [];
 
 const loginContainer = document.getElementById("loginContainer");
-const usernameInput = document.getElementById("usernameInput");
 const loginBtn = document.getElementById("loginBtn");
+const usernameInput = document.getElementById("usernameInput");
+
 const appContainer = document.getElementById("appContainer");
-
-const currentUserEl = document.getElementById("currentUser");
 const publicChat = document.getElementById("publicChat");
-const publicInput = document.getElementById("publicInput");
-const sendPublicBtn = document.getElementById("sendPublicBtn");
-
-const friendsList = document.getElementById("friendsList");
-const privateChatSection = document.getElementById("privateChatSection");
-const privateChatWithEl = document.getElementById("privateChatWith");
 const privateChat = document.getElementById("privateChat");
+const publicInput = document.getElementById("publicInput");
 const privateInput = document.getElementById("privateInput");
+
+const sendPublicBtn = document.getElementById("sendPublicBtn");
 const sendPrivateBtn = document.getElementById("sendPrivateBtn");
 
-let username = null;
-let friends = new Set();
-let currentPrivateChat = null;
+const currentUser = document.getElementById("currentUser");
+const friendRequestsDiv = document.getElementById("friendRequests");
+const friendsListDiv = document.getElementById("friendsList");
+const privateChatWith = document.getElementById("privateChatWith");
+const privateChatSection = document.getElementById("privateChatSection");
 
-function enableLoginBtn() {
-  loginBtn.disabled = usernameInput.value.trim().length === 0;
-}
+let currentPrivateTarget = null;
 
-usernameInput.addEventListener("input", enableLoginBtn);
+usernameInput.addEventListener("input", () => {
+  loginBtn.disabled = usernameInput.value.trim() === "";
+});
 
 loginBtn.addEventListener("click", () => {
-  const name = usernameInput.value.trim();
-  if (!name) return;
-  username = name;
-  socket.emit("register", username);
+  username = usernameInput.value.trim();
+  if (!username) return;
+  socket.emit("login", username);
+  currentUser.textContent = `You: ${username}`;
   loginContainer.classList.add("hidden");
   appContainer.classList.remove("hidden");
-  currentUserEl.textContent = `Logged in as: ${username}`;
-
-  // Load user list for friend adding
-  socket.emit("getUsers");
 });
 
-sendPublicBtn.addEventListener("click", sendPublicMessage);
-publicInput.addEventListener("keydown", (e) => {
-  if (e.key === "Enter") sendPublicMessage();
-});
-
-sendPrivateBtn.addEventListener("click", sendPrivateMessage);
-privateInput.addEventListener("keydown", (e) => {
-  if (e.key === "Enter") sendPrivateMessage();
-});
-
-function sendPublicMessage() {
+sendPublicBtn.addEventListener("click", () => {
   const msg = publicInput.value.trim();
-  if (!msg) return;
-  socket.emit("sendPublicMessage", msg);
-  publicInput.value = "";
-}
-
-function sendPrivateMessage() {
-  const msg = privateInput.value.trim();
-  if (!msg || !currentPrivateChat) return;
-  socket.emit("sendPrivateMessage", { to: currentPrivateChat, message: msg });
-  privateInput.value = "";
-}
-
-socket.on("publicMessage", ({ from, message, timestamp }) => {
-  addMessageToChat(publicChat, from, message, timestamp, from === username);
-});
-
-socket.on("privateMessage", ({ from, to, message, timestamp }) => {
-  if (from === username) {
-    // Sent message, show only if private chat opened with friend
-    if (to === currentPrivateChat) {
-      addMessageToChat(privateChat, from, message, timestamp, true);
-    }
-  } else {
-    // Incoming message
-    if (from === currentPrivateChat) {
-      addMessageToChat(privateChat, from, message, timestamp, false);
-    } else {
-      // If message from another friend, optionally highlight friend in friendsList
-      // TODO: add notifications
-    }
+  if (msg) {
+    socket.emit("publicMessage", msg);
+    publicInput.value = "";
   }
 });
 
-socket.on("userList", (users) => {
-  renderUsers(users);
+sendPrivateBtn.addEventListener("click", () => {
+  const msg = privateInput.value.trim();
+  if (msg && currentPrivateTarget) {
+    socket.emit("privateMessage", {
+      to: currentPrivateTarget,
+      message: msg,
+    });
+    displayPrivateMessage(username, msg, true);
+    privateInput.value = "";
+  }
 });
 
-socket.on("friendAdded", (friendName) => {
-  friends.add(friendName);
+function displayPublicMessage(sender, message) {
+  const div = document.createElement("div");
+  div.className = "message " + (sender === username ? "self" : "other");
+  div.textContent = `${sender}: ${message}`;
+  publicChat.appendChild(div);
+  publicChat.scrollTop = publicChat.scrollHeight;
+}
+
+function displayPrivateMessage(sender, message, self = false) {
+  const div = document.createElement("div");
+  div.className = "message " + (self ? "self" : "other");
+  div.textContent = `${sender}: ${message}`;
+  privateChat.appendChild(div);
+  privateChat.scrollTop = privateChat.scrollHeight;
+}
+
+socket.on("publicMessage", ({ sender, message }) => {
+  displayPublicMessage(sender, message);
+});
+
+socket.on("privateMessage", ({ from, message }) => {
+  if (currentPrivateTarget === from) {
+    displayPrivateMessage(from, message, false);
+  }
+});
+
+socket.on("friendRequest", (from) => {
+  friendRequests.push(from);
+  renderFriendRequests();
+});
+
+socket.on("friendListUpdate", (newList) => {
+  friends = newList;
   renderFriends();
 });
 
-function renderUsers(users) {
-  // Filter out self and existing friends from clickable "add friend" list
-  // We will put user names in public chat clickable messages instead
-
-  // Just update public chat users tooltip with friend adding on username click
-}
-
-function renderFriends() {
-  friendsList.innerHTML = "";
-  friends.forEach((f) => {
-    const friendDiv = document.createElement("div");
-    friendDiv.classList.add("friendItem");
-    friendDiv.textContent = f;
-    friendDiv.onclick = () => openPrivateChat(f);
-    friendsList.appendChild(friendDiv);
+function renderFriendRequests() {
+  friendRequestsDiv.innerHTML = "";
+  friendRequests.forEach((req) => {
+    const btn = document.createElement("button");
+    btn.className = "friend-btn";
+    btn.textContent = `Accept ${req}`;
+    btn.onclick = () => {
+      socket.emit("acceptFriend", req);
+      friendRequests = friendRequests.filter((r) => r !== req);
+      renderFriendRequests();
+    };
+    friendRequestsDiv.appendChild(btn);
   });
 }
 
-function addMessageToChat(container, from, message, timestamp, own = false) {
-  const messageEl = document.createElement("div");
-  messageEl.classList.add("chatMessage");
-  if (own) messageEl.classList.add("own");
-
-  // Username clickable for adding friends only in public chat
-  if (container === publicChat) {
-    const usernameSpan = document.createElement("span");
-    usernameSpan.classList.add("username");
-    usernameSpan.textContent = from;
-    usernameSpan.title = "Click to add friend";
-    usernameSpan.onclick = () => {
-      if (from === username) return;
-      if (friends.has(from)) return alert(`${from} is already your friend!`);
-      socket.emit("addFriend", from);
+function renderFriends() {
+  friendsListDiv.innerHTML = "";
+  friends.forEach((f) => {
+    const btn = document.createElement("button");
+    btn.className = "friend-btn";
+    btn.textContent = f;
+    btn.onclick = () => {
+      currentPrivateTarget = f;
+      privateChatWith.textContent = f;
+      privateChat.innerHTML = "";
+      privateChatSection.classList.remove("hidden");
     };
-
-    messageEl.appendChild(usernameSpan);
-    messageEl.appendChild(document.createTextNode(": " + message));
-  } else {
-    // Private chat, no clickable username needed
-    messageEl.textContent = `${from}: ${message}`;
-  }
-
-  // Timestamp small
-  const timeSpan = document.createElement("span");
-  timeSpan.classList.add("timestamp");
-  timeSpan.textContent = formatTimestamp(timestamp);
-  messageEl.appendChild(timeSpan);
-
-  container.appendChild(messageEl);
-  container.scrollTop = container.scrollHeight;
-}
-
-function openPrivateChat(friendName) {
-  currentPrivateChat = friendName;
-  privateChatWithEl.textContent = friendName;
-  privateChatSection.classList.remove("hidden");
-  privateChat.innerHTML = "";
-}
-
-function formatTimestamp(isoString) {
-  const date = new Date(isoString);
-  return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    friendsListDiv.appendChild(btn);
+  });
 }
