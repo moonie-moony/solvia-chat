@@ -1,44 +1,32 @@
-<!-- public/index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Solvia Chat</title>
-  <link rel="stylesheet" href="styles.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Solvia</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div id="loginScreen">
-    <h2>Enter your Solvia username</h2>
-    <input type="text" id="usernameInput" placeholder="Username" />
-    <button id="loginBtn" disabled>Enter</button>
-  </div>
-
-  <div id="chatApp" class="hidden">
-    <aside id="sidebar">
-      <h3>Solvia</h3>
-      <button id="everyoneBtn">🌐 Everyone</button>
-      <div id="friendListContainer">
-        <h4>Friends</h4>
-        <div id="friendsList"></div>
-      </div>
-      <div id="requestListContainer">
-        <h4>Friend Requests</h4>
-        <div id="friendRequests"></div>
-      </div>
+  <div class="app">
+    <aside class="sidebar">
+      <h1 class="logo">Solvia</h1>
+      <button class="tab" onclick="switchChat('public')">🌐 Public Chat</button>
+      <div class="friends-header">👥 Friends</div>
+      <div id="friendsList"></div>
+      <div class="requests-header">🔔 Requests</div>
+      <div id="requestsList"></div>
     </aside>
 
-    <main id="chatContainer">
-      <div id="chatHeader"></div>
-      <div id="chatMessages"></div>
-      <div id="chatInput">
-        <input type="text" id="messageInput" placeholder="Type a message..." />
-        <button id="sendBtn">Send</button>
+    <main class="chat">
+      <div id="chatHeader" class="chat-header">Public Chat</div>
+      <div id="chatMessages" class="messages"></div>
+      <div class="input-area">
+        <input id="messageInput" type="text" placeholder="Type your message..." />
+        <button onclick="sendMessage()">Send</button>
       </div>
     </main>
   </div>
 
-  <script src="/socket.io/socket.io.js"></script>
   <script src="main.js"></script>
 </body>
 </html>
