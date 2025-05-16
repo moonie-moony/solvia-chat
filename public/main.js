@@ -1,75 +1,94 @@
 const socket = io();
 
-const usernameModal = document.getElementById("username-modal");
+const loginSection = document.getElementById("login-section");
+const chatSection = document.getElementById("chat-section");
+
 const usernameInput = document.getElementById("username-input");
-const usernameSubmit = document.getElementById("username-submit");
-
-const chatContainer = document.getElementById("chat-container");
-const chat = document.getElementById("chat");
-const input = document.getElementById("message");
-
-const roomNameDisplay = document.getElementById("room-name");
+const loginBtn = document.getElementById("login-btn");
 
 const friendsList = document.getElementById("friends-list");
-const friendInput = document.getElementById("friend-input");
+const addFriendInput = document.getElementById("add-friend-input");
 const addFriendBtn = document.getElementById("add-friend-btn");
 
-const groupInput = document.getElementById("group-input");
-const joinGroupBtn = document.getElementById("join-group-btn");
+const messagesContainer = document.getElementById("messages");
+const messageInput = document.getElementById("message-input");
+const sendBtn = document.getElementById("send-btn");
 
-let username = null;
-let currentRoom = "lobby";
+let currentUser = null;
 
-usernameSubmit.addEventListener("click", () => {
-  const name = usernameInput.value.trim();
-  if (name.length > 0) {
-    username = name;
-    socket.emit("join", username);
-    usernameModal.style.display = "none";
-    chatContainer.classList.remove("hidden");
-    input.disabled = false;
-    input.focus();
-  }
-});
-
-input.addEventListener("keypress", function (e) {
-  if (e.key === "Enter" && input.value.trim()) {
-    socket.emit("chat message", { message: input.value.trim() });
-    input.value = "";
-  }
-});
-
-addFriendBtn.addEventListener("click", () => {
-  const friendName = friendInput.value.trim();
-  if (friendName.length > 0) {
-    socket.emit("addFriend", friendName);
-    friendInput.value = "";
-  }
-});
-
-joinGroupBtn.addEventListener("click", () => {
-  const room = groupInput.value.trim();
-  if (room.length > 0) {
-    socket.emit("joinRoom", room);
-    groupInput.value = "";
-  }
-});
-
-socket.on("friendAdded", (friendName) => {
-  const newFriend = document.createElement("div");
-  newFriend.textContent = friendName;
-  friendsList.appendChild(newFriend);
-});
-
-socket.on("joinedRoom", (roomName) => {
-  currentRoom = roomName;
-  roomNameDisplay.textContent = `Current Room: ${roomName}`;
-  chat.innerHTML = "";
-});
-
-socket.on("chat message", function (data) {
+// Helper to render friend in the friends list
+function renderFriend(friend) {
   const div = document.createElement("div");
-  div.innerHTML = `<strong>${data.username}:</strong> ${data.message}`;
-  chat.appendChild(div);
-  chat.scrollTop = chat.scrollHeight;
+  div.textContent = friend.name;
+  div.style.color = friend.online ? "#90ee90" : "#ff6961"; // green or red
+  div.id = `friend-${friend.name}`;
+  return div;
+}
+
+// Login button handler
+loginBtn.addEventListener("click", () => {
+  const username = usernameInput.value.trim();
+  if (!username) return alert("Please enter a username");
+
+  currentUser = username;
+  socket.emit("join", username);
+
+  loginSection.style.display = "none";
+  chatSection.style.display = "block";
+});
+
+// Add friend button handler
+addFriendBtn.addEventListener("click", () => {
+  const friendName = addFriendInput.value.trim();
+  if (!friendName) return alert("Please enter a friend's name");
+  if (friendName === currentUser) return alert("You can't add yourself");
+
+  socket.emit("addFriend", friendName);
+  addFriendInput.value = "";
+});
+
+// Receive the full friend status list on join
+socket.on("friendsStatus", (friends) => {
+  friendsList.innerHTML = "<strong>Friends:</strong><br>";
+  friends.forEach(friend => {
+    friendsList.appendChild(renderFriend(friend));
+  });
+});
+
+// New friend added
+socket.on("friendAdded", (friend) => {
+  friendsList.appendChild(renderFriend(friend));
+});
+
+// Friend status update (online/offline)
+socket.on("friendStatusUpdate", ({ name, online }) => {
+  const friendDiv = document.getElementById(`friend-${name}`);
+  if (friendDiv) {
+    friendDiv.style.color = online ? "#90ee90" : "#ff6961";
+  }
+});
+
+// Send a chat message to the lobby
+sendBtn.addEventListener("click", () => {
+  const msg = messageInput.value.trim();
+  if (!msg) return;
+
+  socket.emit("chatMessage", msg);
+  messageInput.value = "";
+});
+
+// Receive messages (including own)
+socket.on("chatMessage", ({ user, message }) => {
+  const msgDiv = document.createElement("div");
+  msgDiv.innerHTML = `<strong>${user}</strong>: ${message}`;
+  messagesContainer.appendChild(msgDiv);
+  messagesContainer.scrollTop = messagesContainer.scrollHeight;
+});
+
+// Optionally show joined room
+socket.on("joinedRoom", (room) => {
+  const info = document.createElement("div");
+  info.style.fontStyle = "italic";
+  info.textContent = `You joined ${room}`;
+  messagesContainer.appendChild(info);
 });
