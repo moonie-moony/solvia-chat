@@ -1,119 +1,61 @@
+ChatGPT said:
 const express = require('express');
-const http = require('http');
 const path = require('path');
-const { Server } = require('socket.io');
+const WebSocket = require('ws');
 
 const app = express();
-const server = http.createServer(app);
-const io = new Server(server);
-
-const PORT = 3000;
-
-// In-memory data
-const users = {};          // socket.id => username
-const usernames = new Set(); // all usernames connected
-const friends = {};        // username => [friends]
-const friendRequests = {}; // username => [requests]
+const PORT = process.env.PORT || 3000;
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-io.on('connection', (socket) => {
-  console.log('User connected:', socket.id);
+const server = app.listen(PORT, () => {
+console.log(Server running at http://localhost:${PORT});
+});
 
-  socket.on('join', (username) => {
-    if (!username || usernames.has(username)) {
-      socket.emit('join_error', 'Username taken or invalid');
-      return;
-    }
-    users[socket.id] = username;
-    usernames.add(username);
+const wss = new WebSocket.Server({ server });
 
-    // Init friend data if not exists
-    if (!friends[username]) friends[username] = [];
-    if (!friendRequests[username]) friendRequests[username] = [];
+const clients = new Map();
 
-    socket.emit('join_success', username);
-    io.emit('friend_list', friends[username]);
-    socket.join('public');
+wss.on('connection', (ws) => {
+let user = null;
 
-    console.log(`${username} joined`);
-  });
+ws.on('message', (msg) => {
+try {
+const data = JSON.parse(msg);
 
-  // Public message
-  socket.on('public_message', (msg) => {
-    const sender = users[socket.id];
-    if (!sender) return;
-    io.to('public').emit('public_message', {
-      sender,
-      text: msg,
-      timestamp: Date.now()
-    });
-  });
-
-  // Send friend request
-  socket.on('friend_request_send', (target) => {
-    const sender = users[socket.id];
-    if (!sender || sender === target) return;
-    if (!usernames.has(target)) return;
-    if (!friendRequests[target]) friendRequests[target] = [];
-    if (!friendRequests[target].includes(sender) && !friends[target].includes(sender)) {
-      friendRequests[target].push(sender);
-      io.emit('friend_request_received', target);
-    }
-  });
-
-  // Accept friend request
-  socket.on('friend_request_accept', (fromUser) => {
-    const username = users[socket.id];
-    if (!username) return;
-
-    friendRequests[username] = friendRequests[username].filter(u => u !== fromUser);
-    if (!friends[username].includes(fromUser)) friends[username].push(fromUser);
-    if (!friends[fromUser].includes(username)) friends[fromUser].push(username);
-
-    // Notify both users
-    io.emit('friend_request_accepted', { user1: username, user2: fromUser });
-  });
-
-  // Decline friend request
-  socket.on('friend_request_decline', (fromUser) => {
-    const username = users[socket.id];
-    if (!username) return;
-    friendRequests[username] = friendRequests[username].filter(u => u !== fromUser);
-    io.emit('friend_request_declined', username);
-  });
-
-  // Private message
-  socket.on('private_message', ({ to, text }) => {
-    const sender = users[socket.id];
-    if (!sender || !usernames.has(to)) return;
-
-    // Find socket id of recipient
-    const recipientSocketId = Object.keys(users).find(id => users[id] === to);
-    if (!recipientSocketId) return;
-
-    const msgData = {
-      sender,
-      receiver: to,
-      text,
-      timestamp: Date.now()
+pgsql
+Copy
+Edit
+  if (data.type === 'join' && data.user) {
+    user = data.user;
+    clients.set(ws, user);
+    broadcast({ type: 'system', text: `${user.username} joined the chat.` }, ws);
+  } else if (data.type === 'chat' && user) {
+    const chatMsg = {
+      type: 'chat',
+      user,
+      text: data.text
     };
-
-    socket.emit('private_message', msgData); // send back to sender
-    io.to(recipientSocketId).emit('private_message', msgData); // send to recipient
-  });
-
-  // Disconnect
-  socket.on('disconnect', () => {
-    const username = users[socket.id];
-    if (username) {
-      usernames.delete(username);
-      delete users[socket.id];
-      console.log(`${username} disconnected`);
-    }
-  });
+    broadcast(chatMsg);
+  }
+} catch (e) {
+  console.error('Error parsing message:', e);
+}
 });
 
-server.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+ws.on('close', () => {
+if (user) {
+clients.delete(ws);
+broadcast({ type: 'system', text: ${user.username} left the chat. });
+}
 });
+});
+
+function broadcast(data, exclude) {
+const str = JSON.stringify(data);
+for (const client of wss.clients) {
+if (client.readyState === WebSocket.OPEN && client !== exclude) {
+client.send(str);
+}
+}
+}
