@@ -16,48 +16,52 @@ const server = http.createServer((req, res) => {
     if (error) {
       res.writeHead(404);
       res.end('Not found');
-    } else {
-      res.writeHead(200, { 'Content-Type': contentType });
-      res.end(content, 'utf-8');
+      return;
     }
+    res.writeHead(200, { 'Content-Type': contentType });
+    res.end(content, 'utf8');
   });
 });
 
 const wss = new WebSocket.Server({ server });
-
 const clients = new Set();
 
 wss.on('connection', (ws) => {
   clients.add(ws);
+
   ws.on('message', (message) => {
+    let data;
     try {
-      const data = JSON.parse(message);
-      if (data.type === 'join') {
-        ws.username = data.username;
-        ws.send(JSON.stringify({ type: 'system', text: `Welcome ${data.username}!` }));
-        broadcast(JSON.stringify({ type: 'system', text: `${data.username} joined the chat.` }), ws);
-      } else if (data.type === 'chat') {
-        const chatMessage = JSON.stringify({
-          type: 'chat',
-          user: { username: ws.username || 'Unknown' },
-          text: data.text,
-        });
-        broadcast(chatMessage);
-      }
-    } catch (e) {
-      console.error('Invalid message', e);
+      data = JSON.parse(message);
+    } catch {
+      return;
+    }
+
+    if (data.type === 'join') {
+      ws.username = data.username || 'Unknown';
+      ws.send(JSON.stringify({ type: 'system', text: `Welcome ${ws.username}!` }));
+      broadcast({ type: 'system', text: `${ws.username} joined the chat.` }, ws);
+    }
+
+    if (data.type === 'chat' && ws.username) {
+      broadcast({
+        type: 'chat',
+        user: { username: ws.username },
+        text: data.text
+      });
     }
   });
 
   ws.on('close', () => {
     clients.delete(ws);
     if (ws.username) {
-      broadcast(JSON.stringify({ type: 'system', text: `${ws.username} left the chat.` }));
+      broadcast({ type: 'system', text: `${ws.username} left the chat.` });
     }
   });
 });
 
-function broadcast(message, exclude) {
+function broadcast(msg, exclude) {
+  const message = JSON.stringify(msg);
   clients.forEach(client => {
     if (client !== exclude && client.readyState === WebSocket.OPEN) {
       client.send(message);
