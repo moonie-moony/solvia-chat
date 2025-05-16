@@ -1,15 +1,13 @@
 {
-  "name": "public-chat-v2",
+  "name": "public-chat",
   "version": "1.0.0",
-  "description": "Simple public chat app with websockets",
+  "description": "Simple public chat with WebSocket",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
-  "author": "You",
-  "license": "MIT",
   "dependencies": {
-    "ws": "^8.13.0",
-    "express": "^4.18.2"
+    "express": "^4.18.2",
+    "ws": "^8.13.0"
   }
 }
