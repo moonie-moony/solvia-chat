@@ -1,37 +1,14 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Modern Chat UI</title>
-  <link rel="stylesheet" href="style.css" />
-</head>
-<body>
-  <div id="usernameModal" class="modal">
-    <input id="usernameInput" type="text" placeholder="Enter username" autofocus />
-    <button id="usernameSubmit">Join Chat</button>
+<body class="bg-gradient-to-r from-purple-900 via-pink-900 to-red-900 text-white flex flex-col items-center justify-center h-screen relative">
+  <!-- Username modal -->
+  <div id="username-modal" class="absolute inset-0 bg-black bg-opacity-80 flex flex-col items-center justify-center z-50">
+    <h2 class="text-2xl mb-4">Enter your username</h2>
+    <input id="username-input" type="text" maxlength="20" placeholder="Your username" class="p-2 rounded text-black" />
+    <button id="username-submit" class="mt-4 bg-pink-600 px-4 py-2 rounded hover:bg-pink-700">Join Chat</button>
   </div>
 
-  <div class="container" style="display:none;">
-    <aside>
-      <button id="btnPublicChat" class="active">Public Chat</button>
-      <button id="btnFriendRequests">Friend Requests <span id="reqCount" class="badge"></span></button>
-      <ul id="friendList"></ul>
-      <input id="addFriendInput" type="text" placeholder="Add friend" />
-      <button id="btnAddFriend">Add Friend</button>
-    </aside>
-
-    <main>
-      <header id="chatHeader">Public Chat</header>
-      <ul id="chatMessages"></ul>
-      <form id="chatForm">
-        <input id="chatInput" type="text" autocomplete="off" placeholder="Type your message..." />
-        <button type="submit">Send</button>
-      </form>
-    </main>
+  <div id="chat-container" class="hidden w-full max-w-lg flex flex-col h-full">
+    <h1 class="text-3xl font-bold mb-4 text-center">Solvia Chat</h1>
+    <div id="chat" class="bg-black bg-opacity-40 p-4 rounded h-96 overflow-y-scroll mb-4"></div>
+    <input id="message" type="text" placeholder="Type your message..." class="w-full p-2 rounded text-black" disabled />
   </div>
-
-  <script src="/socket.io/socket.io.js"></script>
-  <script src="main.js"></script>
 </body>
-</html>
