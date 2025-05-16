@@ -1,136 +1,68 @@
 const express = require('express');
-const http = require('http');
-const { Server } = require('socket.io');
-
 const app = express();
-const server = http.createServer(app);
-const io = new Server(server);
+const http = require('http').createServer(app);
+const io = require('socket.io')(http);
 
-app.use(express.static('public'));
+const PORT = 3000;
 
-let users = {}; // socket.id -> username
-let friends = {}; // username -> Set of friends
-let friendRequests = {}; // username -> Set of pending requests
-let publicMessages = []; // store last 100 public messages
-let privateMessages = {}; // {user1_user2: [{from, to, text, time}]}
+// Serve static files from current folder
+app.use(express.static(__dirname));
 
-io.on('connection', (socket) => {
+// Data storage (in-memory)
+let users = {};
+let friendRequests = {};
+let friends = {};
+
+io.on('connection', socket => {
   console.log('User connected:', socket.id);
 
-  // User sets username
-  socket.on('set username', (username) => {
-    users[socket.id] = username;
-    if (!friends[username]) friends[username] = new Set();
-    if (!friendRequests[username]) friendRequests[username] = new Set();
+  // When user joins with username
+  socket.on('join', username => {
+    socket.username = username;
+    users[username] = socket.id;
+    if (!friends[username]) friends[username] = [];
+    if (!friendRequests[username]) friendRequests[username] = [];
 
-    // Send initial data
-    socket.emit('init', {
-      username,
-      friends: Array.from(friends[username]),
-      friendRequests: Array.from(friendRequests[username]),
-      publicMessages,
-    });
+    // Send current friends and requests to client
+    socket.emit('friendsList', friends[username]);
+    socket.emit('friendRequests', friendRequests[username]);
   });
 
-  // Public chat message
-  socket.on('public message', (msg) => {
-    const username = users[socket.id];
-    if (!username) return;
-
-    const message = {
-      from: username,
-      text: msg,
-      time: new Date().toISOString(),
-    };
-    publicMessages.push(message);
-    if (publicMessages.length > 100) publicMessages.shift();
-
-    io.emit('public message', message);
-  });
-
-  // Send friend request
-  socket.on('send friend request', (toUser) => {
-    const fromUser = users[socket.id];
-    if (!fromUser || !toUser || fromUser === toUser) return;
-
-    if (!friendRequests[toUser]) friendRequests[toUser] = new Set();
-    friendRequests[toUser].add(fromUser);
-
-    // Notify the user if connected
-    for (const [id, name] of Object.entries(users)) {
-      if (name === toUser) {
-        io.to(id).emit('friend request received', fromUser);
+  // Handle friend request
+  socket.on('friendRequest', ({ from, to }) => {
+    if (!friendRequests[to]) friendRequests[to] = [];
+    if (!friendRequests[to].includes(from)) {
+      friendRequests[to].push(from);
+      const toSocketId = users[to];
+      if (toSocketId) {
+        io.to(toSocketId).emit('friendRequests', friendRequests[to]);
       }
     }
   });
 
-  // Accept friend request
-  socket.on('accept friend request', (fromUser) => {
-    const toUser = users[socket.id];
-    if (!toUser || !fromUser) return;
+  // Handle public chat message
+  socket.on('publicMessage', msg => {
+    io.emit('publicMessage', msg);
+  });
 
-    if (friendRequests[toUser] && friendRequests[toUser].has(fromUser)) {
-      friendRequests[toUser].delete(fromUser);
-      friends[toUser].add(fromUser);
-      if (!friends[fromUser]) friends[fromUser] = new Set();
-      friends[fromUser].add(toUser);
-
-      // Update both users friend lists
-      for (const [id, name] of Object.entries(users)) {
-        if (name === toUser || name === fromUser) {
-          io.to(id).emit('friend list update', Array.from(friends[name]));
-          io.to(id).emit('friend requests update', Array.from(friendRequests[name]));
-        }
-      }
+  // Handle private chat message
+  socket.on('privateMessage', msg => {
+    const toSocketId = users[msg.to];
+    if (toSocketId) {
+      io.to(toSocketId).emit('privateMessage', msg);
     }
+    // Also send to sender to show in their chat window
+    socket.emit('privateMessage', msg);
   });
 
-  // Private message
-  socket.on('private message', ({ toUser, text }) => {
-    const fromUser = users[socket.id];
-    if (!fromUser || !toUser || !text) return;
-
-    const chatKey = [fromUser, toUser].sort().join('_');
-    if (!privateMessages[chatKey]) privateMessages[chatKey] = [];
-
-    const message = {
-      from: fromUser,
-      to: toUser,
-      text,
-      time: new Date().toISOString(),
-    };
-
-    privateMessages[chatKey].push(message);
-    if (privateMessages[chatKey].length > 100) privateMessages[chatKey].shift();
-
-    // Send message to both users if connected
-    for (const [id, name] of Object.entries(users)) {
-      if (name === fromUser || name === toUser) {
-        io.to(id).emit('private message', { chatKey, message });
-      }
-    }
-  });
-
-  // Request private chat history
-  socket.on('get private messages', (otherUser) => {
-    const fromUser = users[socket.id];
-    if (!fromUser || !otherUser) return;
-
-    const chatKey = [fromUser, otherUser].sort().join('_');
-    socket.emit('private messages history', {
-      chatKey,
-      messages: privateMessages[chatKey] || [],
-    });
-  });
-
-  // Disconnect cleanup
   socket.on('disconnect', () => {
-    console.log('User disconnected:', socket.id);
-    delete users[socket.id];
+    if (socket.username) {
+      console.log('User disconnected:', socket.username);
+      delete users[socket.username];
+    }
   });
 });
 
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+http.listen(PORT, () => {
+  console.log(`Server running at http://localhost:${PORT}`);
 });
