@@ -1,14 +1,48 @@
-<body class="bg-gradient-to-r from-purple-900 via-pink-900 to-red-900 text-white flex flex-col items-center justify-center h-screen relative">
-  <!-- Username modal -->
-  <div id="username-modal" class="absolute inset-0 bg-black bg-opacity-80 flex flex-col items-center justify-center z-50">
-    <h2 class="text-2xl mb-4">Enter your username</h2>
-    <input id="username-input" type="text" maxlength="20" placeholder="Your username" class="p-2 rounded text-black" />
-    <button id="username-submit" class="mt-4 bg-pink-600 px-4 py-2 rounded hover:bg-pink-700">Join Chat</button>
-  </div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Modern V2 Chat App</title>
+<link rel="stylesheet" href="style.css" />
+<script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
 
-  <div id="chat-container" class="hidden w-full max-w-lg flex flex-col h-full">
-    <h1 class="text-3xl font-bold mb-4 text-center">Solvia Chat</h1>
-    <div id="chat" class="bg-black bg-opacity-40 p-4 rounded h-96 overflow-y-scroll mb-4"></div>
-    <input id="message" type="text" placeholder="Type your message..." class="w-full p-2 rounded text-black" disabled />
+<!-- Username Modal -->
+<div id="usernameModal" class="modal">
+  <div class="modal-content">
+    <h2>Enter Username</h2>
+    <input id="usernameInput" type="text" placeholder="Username" autofocus />
+    <button id="usernameSubmit">Join Chat</button>
   </div>
+</div>
+
+<div class="container hidden">
+
+  <aside class="sidebar">
+    <button id="btnPublicChat" class="active">Public Chat</button>
+    <button id="btnFriendRequests">Friend Requests <span id="reqCount" class="badge hidden">0</span></button>
+
+    <ul id="friendList" class="friend-list"></ul>
+
+    <div class="add-friend">
+      <input id="addFriendInput" type="text" placeholder="Add friend..." />
+      <button id="btnAddFriend">Add</button>
+    </div>
+  </aside>
+
+  <main class="chat-area">
+    <header id="chatHeader">Public Chat</header>
+    <ul id="chatMessages" class="chat-messages"></ul>
+    <form id="chatForm" class="chat-form">
+      <input id="chatInput" autocomplete="off" placeholder="Type a message..." />
+      <button type="submit">Send</button>
+    </form>
+  </main>
+
+</div>
+
+<script src="main.js"></script>
 </body>
+</html>
