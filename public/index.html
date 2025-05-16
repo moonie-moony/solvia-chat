@@ -1,14 +1,21 @@
-<body class="bg-gradient-to-r from-purple-900 via-pink-900 to-red-900 text-white flex flex-col items-center justify-center h-screen relative">
-  <!-- Username modal -->
-  <div id="username-modal" class="absolute inset-0 bg-black bg-opacity-80 flex flex-col items-center justify-center z-50">
-    <h2 class="text-2xl mb-4">Enter your username</h2>
-    <input id="username-input" type="text" maxlength="20" placeholder="Your username" class="p-2 rounded text-black" />
-    <button id="username-submit" class="mt-4 bg-pink-600 px-4 py-2 rounded hover:bg-pink-700">Join Chat</button>
+<body>
+  <div id="username-modal" class="modal">
+    <input id="username-input" placeholder="Enter username" />
+    <button id="username-submit">Join Chat</button>
   </div>
 
-  <div id="chat-container" class="hidden w-full max-w-lg flex flex-col h-full">
-    <h1 class="text-3xl font-bold mb-4 text-center">Solvia Chat</h1>
-    <div id="chat" class="bg-black bg-opacity-40 p-4 rounded h-96 overflow-y-scroll mb-4"></div>
-    <input id="message" type="text" placeholder="Type your message..." class="w-full p-2 rounded text-black" disabled />
+  <div id="chat-container" class="hidden">
+    <div id="room-name">Current Room: lobby</div>
+    <div id="friends-list"><strong>Friends:</strong></div>
+
+    <input id="friend-input" type="text" placeholder="Add friend username" />
+    <button id="add-friend-btn">Add Friend</button>
+
+    <input id="group-input" type="text" placeholder="Join/Create group room" />
+    <button id="join-group-btn">Join Group</button>
+
+    <div id="chat"></div>
+
+    <input id="message" placeholder="Type message and press Enter" disabled />
   </div>
 </body>
