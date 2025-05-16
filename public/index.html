@@ -1,60 +1,48 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Modern Smooth Chat</title>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet" />
-<style>
-  /* CSS will be below */
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Chat with Friends</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-<!-- Username modal -->
-<div id="usernameModal" class="modal">
-  <div class="modal-content">
-    <h2>Choose your username</h2>
-    <input id="usernameInput" placeholder="Enter username..." autocomplete="off" />
-    <button id="usernameSubmit">Join Chat</button>
+  <div class="username-modal" id="usernameModal">
+    <div class="modal-content">
+      <h2>Enter your username</h2>
+      <input id="usernameInput" type="text" placeholder="Username" />
+      <button id="usernameSubmit">Join Chat</button>
+    </div>
   </div>
-</div>
 
-<!-- Main container -->
-<div class="container">
-
-  <!-- Sidebar -->
-  <aside class="sidebar">
-    <nav class="nav-buttons">
-      <button id="btnPublicChat" class="active">Public Chat</button>
-      <button id="btnFriendRequests">Friend Requests <span id="reqCount" class="badge"></span></button>
-    </nav>
-
-    <section class="friends-section">
-      <h3>Friends</h3>
-      <ul id="friendList"></ul>
-      <div class="add-friend">
-        <input id="addFriendInput" placeholder="Add friend..." autocomplete="off" />
-        <button id="btnAddFriend">+</button>
+  <div class="container" style="display:none;">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <button id="btnPublicChat" class="active">Public Chat</button>
+        <button id="btnFriendRequests">Friend Requests <span id="reqCount" class="req-count" style="display:none;">0</span></button>
       </div>
+
+      <ul id="friendList" class="friend-list"></ul>
+
+      <div class="add-friend">
+        <input id="addFriendInput" placeholder="Add friend by username" />
+        <button id="btnAddFriend">Add</button>
+      </div>
+    </aside>
+
+    <section class="chat-area">
+      <div class="chat-header" id="chatHeader">Public Chat</div>
+      <ul class="chat-messages" id="chatMessages"></ul>
+      <form id="chatForm" style="display:flex;">
+        <input id="chatInput" autocomplete="off" placeholder="Write a message..." />
+        <button type="submit">Send</button>
+      </form>
     </section>
-  </aside>
+  </div>
 
-  <!-- Chat area -->
-  <main class="chat-area">
-    <header id="chatHeader">Public Chat</header>
-    <ul id="chatMessages" class="chat-messages"></ul>
-    <form id="chatForm" class="chat-form">
-      <input id="chatInput" placeholder="Type your message..." autocomplete="off" />
-      <button type="submit">Send</button>
-    </form>
-  </main>
-</div>
-
-<script src="/socket.io/socket.io.js"></script>
-<script>
-  // JS will be below
-</script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="main.js"></script>
 
 </body>
 </html>
